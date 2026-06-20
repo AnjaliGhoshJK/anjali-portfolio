@@ -1,1254 +1,712 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anjali Ghosh — Jewelry CAD Designer</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --black:#0B0B0B;
-  --black2:#111111;
-  --black3:#161616;
+  --bg:#0B0B0B;
+  --bg-2:#141311;
   --gold:#D4AF37;
-  --gold2:#F0D060;
-  --gold3:#A08020;
+  --gold-2:#F7E7A1;
   --white:#FFFFFF;
-  --beige:#F5EDD6;
-  --beige2:#E8D9BB;
-  --muted:#8A7A5A;
-  --card:#181818;
+  --beige:#F5E6D3;
+  --line: rgba(212,175,55,0.18);
 }
-html{scroll-behavior:smooth}
-body{background:var(--black);color:var(--white);font-family:'Cormorant Garamond',serif;overflow-x:hidden}
+*{box-sizing:border-box; -webkit-font-smoothing:antialiased;}
+html,body{background:var(--bg); color:var(--beige); overflow-x:hidden; cursor:none;}
+body{font-family:'Jost',sans-serif; font-weight:300;}
+h1,h2,h3,h4,.serif{font-family:'Cormorant Garamond',serif;}
+::selection{background:var(--gold); color:#0B0B0B;}
 
-/* ══════════ LOADING SCREEN ══════════ */
-#loader{
-  position:fixed;inset:0;z-index:9999;
-  background:var(--black);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  transition:opacity 0.8s ease,visibility 0.8s ease;
-}
-#loader.hide{opacity:0;visibility:hidden}
-.loader-gem{
-  width:80px;height:80px;
-  position:relative;
-  animation:loaderSpin 2s linear infinite;
-}
-.loader-gem svg{width:100%;height:100%}
-@keyframes loaderSpin{
-  0%{transform:rotate(0deg) scale(1)}
-  50%{transform:rotate(180deg) scale(1.1)}
-  100%{transform:rotate(360deg) scale(1)}
-}
-.loader-text{
-  margin-top:2rem;
-  font-family:'Montserrat',sans-serif;
-  font-size:0.65rem;
-  letter-spacing:0.5em;
-  color:var(--gold);
-  animation:pulse 1.5s ease-in-out infinite;
-}
-.loader-bar{
-  width:200px;height:1px;
-  background:rgba(212,175,55,0.2);
-  margin-top:1.5rem;
-  position:relative;overflow:hidden;
-}
-.loader-fill{
-  height:100%;background:var(--gold);
-  animation:loadFill 2.5s ease forwards;
-}
-@keyframes loadFill{from{width:0}to{width:100%}}
-@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+/* ---------- custom cursor ---------- */
+.cursor-dot, .cursor-ring{position:fixed; top:0; left:0; pointer-events:none; z-index:9999; border-radius:50%; transform:translate(-50%,-50%);}
+.cursor-dot{width:5px; height:5px; background:var(--gold-2);}
+.cursor-ring{width:34px; height:34px; border:1px solid var(--gold); transition:width .25s,height .25s,opacity .25s, border-color .25s;}
+.cursor-ring.big{width:64px; height:64px; border-color:var(--gold-2); background:rgba(212,175,55,0.08);}
+@media (max-width:900px){.cursor-dot,.cursor-ring{display:none;} html,body{cursor:auto;}}
 
-/* ══════════ CANVAS PARTICLES ══════════ */
-#particles-canvas{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  pointer-events:none;z-index:0;opacity:0.6;
-}
+/* ---------- preloader ---------- */
+#preloader{position:fixed; inset:0; z-index:10000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 1s ease, visibility 1s ease;}
+#preloader .diamond-wrap{width:90px; height:90px; position:relative;}
+#preloader svg{width:100%; height:100%; transform-origin:center; animation:spin 3.2s linear infinite;}
+#preloader .facet{fill:none; stroke:var(--gold); stroke-width:0.6; opacity:.85;}
+#preloader .shimmer{stroke:url(#shimmerGrad);}
+@keyframes spin{to{transform:rotate(360deg);}}
+#preloader .name{margin-top:28px; font-family:'Cormorant Garamond',serif; letter-spacing:0.45em; font-size:13px; color:var(--gold-2); opacity:0; }
+#preloader .barwrap{margin-top:18px; width:160px; height:1px; background:rgba(212,175,55,0.2); position:relative; overflow:hidden;}
+#preloader .bar{position:absolute; left:0; top:0; height:100%; width:0%; background:var(--gold);}
 
-/* ══════════ NAV ══════════ */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:1.2rem 4rem;
-  background:rgba(11,11,11,0.9);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(212,175,55,0.12);
-  transition:all 0.4s ease;
-}
-nav.scrolled{padding:0.8rem 4rem;background:rgba(11,11,11,0.97)}
-.nav-logo{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.3rem;font-weight:600;
-  letter-spacing:0.12em;color:var(--gold);
-}
-.nav-logo span{font-style:italic;color:var(--white)}
-.nav-links{display:flex;gap:2.5rem;list-style:none}
-.nav-links a{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.65rem;font-weight:400;
-  letter-spacing:0.22em;text-transform:uppercase;
-  color:rgba(255,255,255,0.65);text-decoration:none;
-  transition:color 0.3s;position:relative;
-}
-.nav-links a::after{
-  content:'';position:absolute;bottom:-4px;left:0;right:0;
-  height:1px;background:var(--gold);
-  transform:scaleX(0);transition:transform 0.3s;
-}
-.nav-links a:hover{color:var(--gold)}
-.nav-links a:hover::after{transform:scaleX(1)}
-.nav-menu-btn{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
-.nav-menu-btn span{display:block;width:22px;height:1px;background:var(--gold);transition:all 0.3s}
+/* ---------- nav ---------- */
+nav{position:fixed; top:0; left:0; right:0; z-index:500; display:flex; align-items:center; justify-content:space-between; padding:22px 5vw; mix-blend-mode:difference;}
+.brand{font-family:'Cormorant Garamond',serif; font-size:22px; letter-spacing:0.15em; color:var(--white);}
+.nav-links{display:flex; gap:36px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase;}
+.nav-links a{color:var(--beige); position:relative; padding-bottom:4px;}
+.nav-links a::after{content:'';position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--gold-2); transition:width .35s ease;}
+.nav-links a:hover::after{width:100%;}
+.nav-burger{display:none;}
+@media(max-width:900px){.nav-links{display:none;} .nav-burger{display:block; color:var(--white);}}
 
-/* ══════════ HERO ══════════ */
-.hero{
-  position:relative;min-height:100vh;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;padding:8rem 2rem 4rem;
-  overflow:hidden;z-index:1;
-}
-.hero-bg{
-  position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 40%, rgba(212,175,55,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 30% 30% at 20% 70%, rgba(212,175,55,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 30% at 80% 30%, rgba(212,175,55,0.04) 0%, transparent 60%);
-}
-/* floating jewelry shapes */
-.jewelry-float{
-  position:absolute;pointer-events:none;z-index:0;
-  animation:floatY 8s ease-in-out infinite;
-}
-.jewelry-float:nth-child(1){top:15%;left:8%;animation-delay:0s;opacity:0.18}
-.jewelry-float:nth-child(2){top:25%;right:8%;animation-delay:-2s;opacity:0.15}
-.jewelry-float:nth-child(3){bottom:20%;left:12%;animation-delay:-4s;opacity:0.12}
-.jewelry-float:nth-child(4){bottom:30%;right:10%;animation-delay:-6s;opacity:0.14}
-@keyframes floatY{
-  0%,100%{transform:translateY(0) rotate(0deg)}
-  33%{transform:translateY(-18px) rotate(3deg)}
-  66%{transform:translateY(8px) rotate(-2deg)}
-}
-.hero-content{position:relative;z-index:2}
-.hero-eyebrow{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.62rem;letter-spacing:0.4em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:1.5rem;
-  opacity:0;transform:translateY(20px);
-  animation:fadeUp 0.8s ease 3s forwards;
-}
-.hero h1{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(3.5rem,9vw,8rem);
-  font-weight:700;line-height:1;
-  letter-spacing:0.06em;
-  opacity:0;transform:translateY(30px);
-  animation:fadeUp 1s ease 3.2s forwards;
-}
-.hero h1 .italic{font-style:italic;color:var(--gold)}
-.hero-sub{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.72rem;letter-spacing:0.22em;
-  text-transform:uppercase;color:rgba(255,255,255,0.5);
-  margin:1rem 0 2rem;
-  opacity:0;animation:fadeUp 0.8s ease 3.5s forwards;
-}
-.hero-tagline{
-  font-size:1.25rem;font-weight:300;font-style:italic;
-  color:var(--beige2);max-width:560px;margin:0 auto 3rem;
-  line-height:1.8;
-  opacity:0;animation:fadeUp 0.8s ease 3.7s forwards;
-}
-.hero-divider{
-  display:flex;align-items:center;gap:1rem;
-  max-width:300px;margin:0 auto 2.5rem;
-  opacity:0;animation:fadeUp 0.8s ease 3.9s forwards;
-}
-.hero-divider::before,.hero-divider::after{
-  content:'';flex:1;height:1px;
-  background:linear-gradient(to right, transparent, var(--gold), transparent);
-}
-.hero-divider span{color:var(--gold);font-size:1.2rem}
-.hero-btns{
-  display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;
-  opacity:0;animation:fadeUp 0.8s ease 4.1s forwards;
-}
-.btn{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;
-  padding:1rem 2.5rem;text-decoration:none;
-  transition:all 0.35s ease;cursor:pointer;border:none;
-  display:inline-block;
-}
-.btn-gold{
-  background:var(--gold);color:var(--black);
-  position:relative;overflow:hidden;
-}
-.btn-gold::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
-  transform:translateX(-100%);transition:transform 0.5s;
-}
-.btn-gold:hover::before{transform:translateX(100%)}
-.btn-gold:hover{background:var(--gold2);box-shadow:0 0 30px rgba(212,175,55,0.4)}
-.btn-outline-gold{
-  background:transparent;color:var(--gold);
-  border:1px solid rgba(212,175,55,0.5);
-}
-.btn-outline-gold:hover{
-  background:rgba(212,175,55,0.08);
-  border-color:var(--gold);
-  box-shadow:0 0 20px rgba(212,175,55,0.2);
-}
-.scroll-indicator{
-  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:0.5rem;
-  opacity:0;animation:fadeIn 1s ease 4.5s forwards;
-}
-.scroll-indicator span{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.55rem;letter-spacing:0.3em;color:var(--muted);text-transform:uppercase;
-}
-.scroll-line{
-  width:1px;height:50px;
-  background:linear-gradient(to bottom, var(--gold), transparent);
-  animation:scrollPulse 2s ease-in-out infinite;
-}
-@keyframes scrollPulse{0%,100%{transform:scaleY(1);opacity:1}50%{transform:scaleY(0.5);opacity:0.3}}
-@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{to{opacity:1}}
+/* ---------- hero ---------- */
+#hero{position:relative; height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; overflow:hidden;}
+#hero-canvas{position:absolute; inset:0; z-index:1; opacity:0.9;}
+.gold-dust{position:absolute; inset:0; z-index:2; pointer-events:none;}
+.hero-inner{position:relative; z-index:3; padding:0 6vw;}
+.hero-eyebrow{font-size:12px; letter-spacing:0.5em; text-transform:uppercase; color:var(--gold); margin-bottom:18px;}
+.hero-title{font-size:clamp(56px,11vw,150px); line-height:0.95; font-weight:400; color:var(--white); letter-spacing:0.02em;}
+.hero-title .accent{color:var(--gold); font-style:italic; font-weight:300;}
+.split-line{overflow:hidden;}
+.split-line span{display:inline-block; transform:translateY(110%);}
+.hero-sub{margin-top:22px; font-size:clamp(14px,2vw,18px); letter-spacing:0.08em; color:var(--beige); text-transform:uppercase;}
+.hero-tag{max-width:520px; margin:20px auto 0; font-size:15px; line-height:1.8; color:rgba(245,230,211,0.75);}
+.hero-btns{margin-top:40px; display:flex; gap:20px; justify-content:center; flex-wrap:wrap;}
+.btn-gold{padding:15px 38px; border:1px solid var(--gold); color:var(--gold-2); font-size:12px; letter-spacing:0.2em; text-transform:uppercase; position:relative; overflow:hidden; transition:color .4s;}
+.btn-gold span{position:relative; z-index:2;}
+.btn-gold::before{content:'';position:absolute; inset:0; background:var(--gold); transform:translateY(101%); transition:transform .45s cubic-bezier(.77,0,.18,1); z-index:1;}
+.btn-gold:hover{color:#0B0B0B;}
+.btn-gold:hover::before{transform:translateY(0);}
+.btn-ghost{padding:15px 38px; color:var(--beige); font-size:12px; letter-spacing:0.2em; text-transform:uppercase; border-bottom:1px solid transparent; transition:border-color .3s,color .3s;}
+.btn-ghost:hover{border-color:var(--gold-2); color:var(--gold-2);}
+.scroll-hint{position:absolute; bottom:34px; left:50%; transform:translateX(-50%); z-index:3; font-size:10px; letter-spacing:0.3em; color:rgba(245,230,211,0.5); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:10px;}
+.scroll-hint .line{width:1px; height:40px; background:linear-gradient(var(--gold),transparent); animation:dropline 2s ease-in-out infinite;}
+@keyframes dropline{0%{transform:scaleY(0); transform-origin:top;}50%{transform:scaleY(1); transform-origin:top;}50.001%{transform-origin:bottom;}100%{transform:scaleY(0); transform-origin:bottom;}}
 
-/* ══════════ SECTION BASE ══════════ */
-.section{padding:7rem 2rem;position:relative;z-index:1}
-.container{max-width:1100px;margin:0 auto}
-.section-badge{
-  display:inline-block;
-  font-family:'Montserrat',sans-serif;
-  font-size:0.6rem;letter-spacing:0.4em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:0.8rem;
-}
-.section-title{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(2.2rem,5vw,3.8rem);
-  font-weight:600;line-height:1.15;margin-bottom:0.5rem;
-}
-.section-title em{font-style:italic;color:var(--gold)}
-.gold-rule{
-  display:flex;align-items:center;gap:1rem;
-  margin:1.5rem 0 3rem;
-}
-.gold-rule::before,.gold-rule::after{
-  content:'';flex:1;max-width:80px;height:1px;
-  background:linear-gradient(to right, var(--gold), transparent);
-}
-.gold-rule::after{background:linear-gradient(to left, var(--gold), transparent)}
-.gold-rule span{color:var(--gold);font-size:0.75rem}
-.center-rule{justify-content:center}
-.center-rule::before,.center-rule::after{max-width:120px}
+/* ---------- generic section ---------- */
+.section{position:relative; padding:140px 6vw;}
+.eyebrow{font-size:12px; letter-spacing:0.4em; text-transform:uppercase; color:var(--gold); margin-bottom:18px; display:flex; align-items:center; gap:14px;}
+.eyebrow::before{content:'';width:30px; height:1px; background:var(--gold);}
+.sec-title{font-size:clamp(34px,5vw,64px); color:var(--white); font-weight:400; line-height:1.1;}
+.divider{height:1px; width:100%; background:linear-gradient(90deg,transparent,var(--line),transparent); margin:0 auto;}
 
-/* ══════════ ABOUT ══════════ */
-#about{background:var(--black2)}
-.about-grid{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:5rem;align-items:center;
-}
-.about-img-wrap{
-  position:relative;
-}
-.about-svg-frame{
-  width:100%;aspect-ratio:3/4;
-  background:linear-gradient(135deg, #181818, #1a1a1a);
-  border:1px solid rgba(212,175,55,0.2);
-  display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;
-}
-.about-svg-frame::before{
-  content:'';position:absolute;inset:0;
-  background:
-    linear-gradient(135deg, rgba(212,175,55,0.06) 0%, transparent 50%),
-    linear-gradient(315deg, rgba(212,175,55,0.04) 0%, transparent 50%);
-}
-.about-svg-frame::after{
-  content:'';
-  position:absolute;top:12px;left:12px;right:12px;bottom:12px;
-  border:1px solid rgba(212,175,55,0.12);
-  pointer-events:none;
-}
-.about-monogram{
-  font-family:'Cormorant Garamond',serif;
-  font-size:7rem;font-weight:700;
-  color:rgba(212,175,55,0.15);
-  font-style:italic;
-  position:relative;z-index:1;
-  letter-spacing:-0.05em;
-}
-.about-badge{
-  position:absolute;bottom:-1rem;right:-1rem;
-  width:90px;height:90px;
-  background:var(--gold);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-}
-.about-badge-num{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.8rem;font-weight:700;color:var(--black);line-height:1;
-}
-.about-badge-txt{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.45rem;letter-spacing:0.1em;color:var(--black);text-transform:uppercase;
-}
-.about-text p{
-  color:rgba(255,255,255,0.65);font-size:1.05rem;font-weight:300;
-  line-height:1.85;margin-bottom:1.2rem;
-}
-.about-facts{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:1rem;margin-top:2.5rem;
-}
-.fact-item{
-  padding:1.2rem;
-  border:1px solid rgba(212,175,55,0.15);
-  background:rgba(212,175,55,0.03);
-  position:relative;
-}
-.fact-item::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;
-  height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);
-}
-.fact-num{
-  font-family:'Cormorant Garamond',serif;
-  font-size:2rem;font-weight:700;color:var(--gold);display:block;
-}
-.fact-label{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);
-}
+/* ---------- about ---------- */
+#about{display:grid; grid-template-columns:0.9fr 1.1fr; gap:80px; align-items:center;}
+@media(max-width:900px){#about{grid-template-columns:1fr;}}
+.portrait-frame{position:relative; aspect-ratio:3/4; border:1px solid var(--line); padding:18px;}
+.portrait-inner{width:100%; height:100%; background:
+   radial-gradient(circle at 30% 20%, rgba(212,175,55,0.18), transparent 60%),
+   linear-gradient(160deg,#1c1a16,#0b0b0b 70%);
+   position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;}
+.portrait-inner svg{width:46%; opacity:.9;}
+.portrait-caption{position:absolute; bottom:-16px; right:-16px; background:var(--bg); border:1px solid var(--line); padding:10px 18px; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-2);}
+.stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:50px;}
+@media(max-width:640px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat{border-top:1px solid var(--line); padding-top:16px;}
+.stat .num{font-family:'Cormorant Garamond',serif; font-size:42px; color:var(--gold-2);}
+.stat .lbl{font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(245,230,211,0.65); margin-top:4px;}
 
-/* ══════════ SKILLS ══════════ */
-#skills{background:var(--black)}
-.skills-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:1.2rem;
-}
-.skill-card{
-  background:var(--card);
-  border:1px solid rgba(212,175,55,0.1);
-  padding:2rem 1.5rem;
-  position:relative;overflow:hidden;
-  transition:transform 0.35s, border-color 0.35s, box-shadow 0.35s;
-}
-.skill-card:hover{
-  transform:translateY(-6px);
-  border-color:rgba(212,175,55,0.4);
-  box-shadow:0 12px 40px rgba(212,175,55,0.1);
-}
-.skill-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;
-  height:2px;
-  background:linear-gradient(to right, transparent, var(--gold), transparent);
-  transform:scaleX(0);transition:transform 0.35s;
-}
-.skill-card:hover::before{transform:scaleX(1)}
-.skill-icon{font-size:1.8rem;margin-bottom:1rem;display:block}
-.skill-name{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.2rem;font-weight:600;margin-bottom:1rem;
-}
-.skill-bar-wrap{
-  height:2px;background:rgba(255,255,255,0.08);position:relative;
-}
-.skill-bar-fill{
-  height:100%;background:linear-gradient(to right,var(--gold3),var(--gold),var(--gold2));
-  width:0;transition:width 1.2s ease;
-}
-.skill-pct{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.6rem;letter-spacing:0.1em;color:var(--muted);
-  margin-top:0.4rem;display:block;
-}
+/* ---------- skills ---------- */
+.skills-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:60px;}
+@media(max-width:900px){.skills-grid{grid-template-columns:repeat(2,1fr);}}
+.skill-card{background:var(--bg); padding:34px 26px; transition:background .4s; position:relative;}
+.skill-card:hover{background:#141210;}
+.skill-name{font-size:15px; letter-spacing:0.04em; color:var(--white); margin-bottom:18px;}
+.skill-bar{height:1px; background:rgba(245,230,211,0.12); position:relative;}
+.skill-fill{position:absolute; left:0; top:0; height:100%; width:0%; background:linear-gradient(90deg,var(--gold),var(--gold-2)); box-shadow:0 0 8px rgba(212,175,55,0.6);}
+.skill-pct{font-size:11px; color:var(--gold-2); margin-top:10px; letter-spacing:0.1em;}
 
-/* ══════════ COLLECTION TABS ══════════ */
-#collections{background:var(--black2)}
-.collection-tabs{
-  display:flex;gap:0.5rem;flex-wrap:wrap;
-  margin-bottom:3rem;
-}
-.tab-btn{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;
-  padding:0.7rem 1.5rem;cursor:pointer;
-  background:transparent;color:rgba(255,255,255,0.45);
-  border:1px solid rgba(212,175,55,0.15);
-  transition:all 0.3s;
-}
-.tab-btn.active,.tab-btn:hover{
-  background:rgba(212,175,55,0.1);
-  color:var(--gold);border-color:rgba(212,175,55,0.4);
-}
-.tab-btn.active{border-bottom:2px solid var(--gold)}
-.collection-panel{display:none}
-.collection-panel.active{display:grid}
-.collection-panel{
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:1.2rem;
-}
-.jewelry-card{
-  position:relative;overflow:hidden;cursor:pointer;
-  aspect-ratio:3/4;
-  background:var(--card);
-  border:1px solid rgba(212,175,55,0.1);
-  transition:transform 0.4s,box-shadow 0.4s;
-}
-.jewelry-card:hover{
-  transform:scale(1.02);
-  box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(212,175,55,0.1);
-}
-.jewelry-card-art{
-  width:100%;height:100%;
-  display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;
-}
-.jewelry-card-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%);
-  opacity:0;transition:opacity 0.35s;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-end;
-  padding:1.5rem;text-align:center;
-}
-.jewelry-card:hover .jewelry-card-overlay{opacity:1}
-.jewelry-card-name{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.1rem;font-weight:600;
-  color:var(--white);margin-bottom:0.3rem;
-}
-.jewelry-card-cat{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;
-  color:var(--gold);
-}
-.view-btn{
-  display:inline-block;margin-top:0.8rem;
-  font-family:'Montserrat',sans-serif;
-  font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;
-  padding:0.5rem 1.2rem;
-  border:1px solid var(--gold);color:var(--gold);
-  background:transparent;transition:all 0.3s;
-}
-.jewelry-card:hover .view-btn{background:var(--gold);color:var(--black)}
+/* ---------- collections ---------- */
+.filter-row{display:flex; flex-wrap:wrap; gap:10px; margin:50px 0 40px;}
+.filter-btn{padding:10px 22px; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; border:1px solid var(--line); color:rgba(245,230,211,0.7); transition:all .3s;}
+.filter-btn.active,.filter-btn:hover{border-color:var(--gold); color:var(--gold-2); background:rgba(212,175,55,0.06);}
+.gallery{column-count:3; column-gap:18px;}
+@media(max-width:1000px){.gallery{column-count:2;}}
+@media(max-width:620px){.gallery{column-count:1;}}
+.piece{break-inside:avoid; margin-bottom:18px; position:relative; overflow:hidden; border:1px solid var(--line); cursor:none;}
+.piece-art{aspect-ratio:1/1.15; width:100%; position:relative; display:flex; align-items:center; justify-content:center; background:linear-gradient(150deg,#16140f,#0b0b0b 65%);}
+.piece-art svg{width:42%; transition:transform .6s cubic-bezier(.16,1,.3,1); filter:drop-shadow(0 0 14px rgba(212,175,55,0.25));}
+.piece:hover .piece-art svg{transform:scale(1.12) rotate(4deg);}
+.piece-overlay{position:absolute; inset:0; background:linear-gradient(0deg,rgba(0,0,0,0.85),transparent 55%); display:flex; flex-direction:column; justify-content:flex-end; padding:18px; opacity:0; transition:opacity .4s;}
+.piece:hover .piece-overlay{opacity:1;}
+.piece-cat{font-size:10px; letter-spacing:0.2em; color:var(--gold); text-transform:uppercase;}
+.piece-name{font-family:'Cormorant Garamond',serif; font-size:20px; color:var(--white); margin-top:4px;}
 
 /* lightbox */
-#lightbox{
-  position:fixed;inset:0;z-index:1000;
-  background:rgba(0,0,0,0.95);
-  display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(10px);
-}
-#lightbox.open{display:flex}
-.lightbox-inner{
-  position:relative;max-width:700px;width:90%;
-  background:var(--card);border:1px solid rgba(212,175,55,0.2);
-  padding:3rem;text-align:center;
-}
-#lightbox-art{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
-#lightbox-title{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.8rem;margin-top:1.5rem;font-weight:600;
-}
-#lightbox-cat{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;
-  color:var(--gold);margin-top:0.3rem;
-}
-#lightbox-close{
-  position:absolute;top:1rem;right:1.5rem;
-  font-size:1.5rem;color:var(--muted);cursor:pointer;
-  background:none;border:none;transition:color 0.3s;
-}
-#lightbox-close:hover{color:var(--gold)}
+#lightbox{position:fixed; inset:0; background:rgba(6,6,5,0.96); z-index:2000; display:none; align-items:center; justify-content:center; padding:6vw;}
+#lightbox.open{display:flex;}
+.lb-inner{max-width:560px; text-align:center;}
+.lb-close{position:absolute; top:30px; right:5vw; font-size:12px; letter-spacing:0.2em; color:var(--gold-2); text-transform:uppercase;}
 
-/* ══════════ EXPERIENCE ══════════ */
-#experience{background:var(--black)}
-.exp-line{
-  position:absolute;left:0;top:0;bottom:0;
-  width:1px;
-  background:linear-gradient(to bottom, var(--gold), rgba(212,175,55,0.1));
-}
-.exp-wrap{position:relative;padding-left:3rem}
-.exp-item{
-  margin-bottom:4rem;position:relative;
-}
-.exp-dot{
-  position:absolute;left:-3.45rem;top:0.15rem;
-  width:10px;height:10px;background:var(--gold);
-  clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-}
-.exp-period{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:0.4rem;
-}
-.exp-role{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.6rem;font-weight:600;margin-bottom:0.2rem;
-}
-.exp-co{
-  font-style:italic;color:var(--muted);font-size:1rem;margin-bottom:1.2rem;
-}
-.exp-list{list-style:none}
-.exp-list li{
-  color:rgba(255,255,255,0.62);font-size:0.97rem;font-weight:300;
-  padding:0.3rem 0 0.3rem 1.5rem;position:relative;line-height:1.7;
-}
-.exp-list li::before{
-  content:'◆';position:absolute;left:0;
-  font-size:0.45rem;color:var(--gold);top:0.55rem;
-}
+/* ---------- case studies ---------- */
+.case-list{margin-top:60px; border-top:1px solid var(--line);}
+.case-row{border-bottom:1px solid var(--line); padding:34px 0; cursor:none; display:flex; align-items:center; justify-content:space-between; gap:30px; transition:padding .4s;}
+.case-row:hover{padding-left:14px; background:rgba(212,175,55,0.04);}
+.case-left{display:flex; align-items:baseline; gap:26px;}
+.case-step{font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--gold); font-size:16px; width:24px;}
+.case-title{font-family:'Cormorant Garamond',serif; font-size:clamp(22px,3vw,34px); color:var(--white);}
+.case-meta{font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,230,211,0.55);}
+.case-arrow{font-size:20px; color:var(--gold-2); transition:transform .4s;}
+.case-row:hover .case-arrow{transform:translateX(8px);}
 
-/* ══════════ ACHIEVEMENTS ══════════ */
-#achievements{background:var(--black2)}
-.achieve-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-  gap:1.2rem;
-}
-.achieve-card{
-  background:var(--card);
-  border:1px solid rgba(212,175,55,0.12);
-  padding:2.5rem 1.8rem;
-  position:relative;overflow:hidden;
-  transition:transform 0.35s,border-color 0.35s,box-shadow 0.35s;
-  text-align:center;
-}
-.achieve-card:hover{
-  transform:translateY(-6px);
-  border-color:rgba(212,175,55,0.35);
-  box-shadow:0 16px 50px rgba(212,175,55,0.08);
-}
-.achieve-card::before{
-  content:'';position:absolute;bottom:0;left:0;right:0;
-  height:2px;
-  background:linear-gradient(to right,transparent,var(--gold),transparent);
-}
-.achieve-num{
-  font-family:'Cormorant Garamond',serif;
-  font-size:3rem;font-weight:700;color:rgba(212,175,55,0.15);
-  position:absolute;top:0.5rem;right:1rem;line-height:1;
-}
-.achieve-icon{font-size:2rem;margin-bottom:1rem;display:block}
-.achieve-h{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.15rem;font-weight:600;color:var(--gold);
-  margin-bottom:0.8rem;
-}
-.achieve-p{
-  font-size:0.92rem;font-weight:300;
-  color:rgba(255,255,255,0.6);line-height:1.7;
-}
+#case-detail{position:fixed; inset:0; background:var(--bg); z-index:3000; overflow-y:auto; display:none;}
+#case-detail.open{display:block;}
+.cd-close{position:fixed; top:30px; right:5vw; z-index:10; font-size:12px; letter-spacing:0.2em; color:var(--gold-2); text-transform:uppercase;}
+.cd-hero{padding:160px 6vw 60px; border-bottom:1px solid var(--line);}
+.cd-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:20px; padding:50px 6vw;}
+@media(max-width:900px){.cd-grid{grid-template-columns:repeat(2,1fr);}}
+.cd-stage{border:1px solid var(--line); padding:24px 18px; text-align:center;}
+.cd-stage .n{font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--gold); font-size:22px;}
+.cd-stage .t{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; margin-top:10px; color:var(--beige);}
+.cd-body{padding:0 6vw 120px; max-width:780px;}
+.cd-body h4{color:var(--gold-2); font-family:'Cormorant Garamond',serif; font-size:24px; margin-top:46px; margin-bottom:14px;}
+.cd-body p{line-height:1.9; color:rgba(245,230,211,0.8); font-size:15px;}
 
-/* ══════════ PASSION ══════════ */
-#passion{
-  background:
-    linear-gradient(to bottom, var(--black) 0%, #0d0d0d 50%, var(--black) 100%);
-  text-align:center;
-  overflow:hidden;
-}
-.passion-bg-text{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  font-family:'Cormorant Garamond',serif;
-  font-size:18vw;font-weight:700;font-style:italic;
-  color:rgba(212,175,55,0.03);
-  white-space:nowrap;pointer-events:none;z-index:0;
-  line-height:1;
-}
-.passion-content{position:relative;z-index:1}
-.passion-quote{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(1.3rem,2.5vw,1.9rem);
-  font-style:italic;font-weight:300;
-  color:rgba(255,255,255,0.82);
-  max-width:750px;margin:0 auto;
-  line-height:1.85;position:relative;
-  padding:0 3rem;
-}
-.passion-quote::before,.passion-quote::after{
-  content:'"';position:absolute;
-  font-size:6rem;color:rgba(212,175,55,0.2);
-  font-family:'Cormorant Garamond',serif;
-  line-height:1;
-}
-.passion-quote::before{top:-1rem;left:0}
-.passion-quote::after{bottom:-3rem;right:0;content:'"'}
-.passion-sig{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.5rem;font-style:italic;
-  color:var(--gold);margin-top:3.5rem;
-}
-.passion-sig::before{content:'— '}
+/* ---------- experience ---------- */
+.timeline{position:relative; margin-top:70px; padding-left:40px;}
+.timeline::before{content:'';position:absolute; left:0; top:6px; bottom:6px; width:1px; background:var(--line);}
+.t-item{position:relative; padding-bottom:64px;}
+.t-item:last-child{padding-bottom:0;}
+.t-dot{position:absolute; left:-44px; top:6px; width:9px; height:9px; border-radius:50%; background:var(--gold); box-shadow:0 0 12px rgba(212,175,55,0.7);}
+.t-role{font-family:'Cormorant Garamond',serif; font-size:28px; color:var(--white);}
+.t-co{color:var(--gold-2); font-size:13px; letter-spacing:0.08em; margin-top:4px;}
+.t-date{font-size:11px; color:rgba(245,230,211,0.5); letter-spacing:0.1em; text-transform:uppercase; margin-top:4px;}
+.t-list{margin-top:18px; display:grid; gap:10px;}
+.t-list li{font-size:14px; line-height:1.7; color:rgba(245,230,211,0.78); padding-left:18px; position:relative;}
+.t-list li::before{content:'';position:absolute; left:0; top:9px; width:6px; height:1px; background:var(--gold);}
 
-/* ══════════ CONTACT ══════════ */
-#contact{background:var(--black2)}
-.contact-grid{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:4rem;align-items:start;
-}
-.contact-info-side h3{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.8rem;font-weight:600;
-  margin-bottom:0.5rem;
-}
-.contact-info-side p{
-  color:rgba(255,255,255,0.5);font-size:0.95rem;
-  font-weight:300;font-style:italic;margin-bottom:2.5rem;
-}
-.contact-items{display:flex;flex-direction:column;gap:1.2rem}
-.contact-row{
-  display:flex;align-items:center;gap:1.2rem;
-  text-decoration:none;color:rgba(255,255,255,0.7);
-  font-size:1rem;font-weight:300;
-  transition:color 0.3s;
-}
-.contact-row:hover{color:var(--gold)}
-.contact-row-icon{
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(212,175,55,0.08);
-  border:1px solid rgba(212,175,55,0.2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;flex-shrink:0;
-  transition:background 0.3s,border-color 0.3s;
-}
-.contact-row:hover .contact-row-icon{
-  background:rgba(212,175,55,0.15);border-color:var(--gold);
-}
-.contact-form{display:flex;flex-direction:column;gap:1rem}
-.form-group{display:flex;flex-direction:column;gap:0.4rem}
-.form-group label{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);
-}
-.form-group input,.form-group textarea{
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(212,175,55,0.15);
-  color:var(--white);
-  padding:0.9rem 1rem;
-  font-family:'Cormorant Garamond',serif;
-  font-size:1rem;font-weight:300;
-  transition:border-color 0.3s;outline:none;
-  resize:none;
-}
-.form-group input:focus,.form-group textarea:focus{
-  border-color:rgba(212,175,55,0.5);
-  background:rgba(212,175,55,0.02);
-}
-.form-group textarea{min-height:130px}
-.form-msg{
-  margin-top:0.5rem;font-size:0.85rem;
-  font-style:italic;color:var(--gold);display:none;
-}
+/* ---------- achievements ---------- */
+.ach-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:60px;}
+@media(max-width:900px){.ach-grid{grid-template-columns:repeat(2,1fr);}}
+.ach-card{background:var(--bg); padding:40px 26px; text-align:center;}
+.ach-icon{width:34px; height:34px; margin:0 auto 20px; opacity:.9;}
+.ach-title{font-family:'Cormorant Garamond',serif; font-size:19px; color:var(--white); line-height:1.3;}
 
-/* ══════════ SOCIAL ══════════ */
-.social-links{
-  display:flex;gap:1rem;margin-top:2rem;
-}
-.social-link{
-  width:40px;height:40px;
-  border:1px solid rgba(212,175,55,0.25);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--muted);font-size:0.85rem;
-  text-decoration:none;transition:all 0.3s;
-  font-family:'Montserrat',sans-serif;font-weight:500;
-}
-.social-link:hover{
-  border-color:var(--gold);color:var(--gold);
-  background:rgba(212,175,55,0.08);
-}
+/* ---------- passion ---------- */
+#passion{min-height:80vh; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; overflow:hidden;}
+#passion canvas{position:absolute; inset:0; opacity:.55;}
+.passion-inner{position:relative; z-index:2; max-width:780px; padding:0 6vw;}
+.passion-title{font-size:clamp(30px,5.5vw,64px); color:var(--white); letter-spacing:0.04em; line-height:1.15;}
+.passion-text{margin-top:26px; font-size:16px; line-height:2; color:rgba(245,230,211,0.78);}
 
-/* ══════════ FOOTER ══════════ */
-footer{
-  background:var(--black);
-  border-top:1px solid rgba(212,175,55,0.1);
-  padding:2rem;text-align:center;
-}
-.footer-inner{
-  display:flex;justify-content:space-between;align-items:center;
-  flex-wrap:wrap;gap:1rem;max-width:1100px;margin:0 auto;
-}
-.footer-copy{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.6rem;letter-spacing:0.18em;color:var(--muted);
-}
-.footer-logo{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.1rem;font-weight:600;color:var(--gold);letter-spacing:0.1em;
-}
-.footer-tagline{
-  font-family:'Montserrat',sans-serif;
-  font-size:0.55rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;
-}
+/* ---------- contact ---------- */
+#contact{display:grid; grid-template-columns:0.8fr 1.2fr; gap:80px;}
+@media(max-width:900px){#contact{grid-template-columns:1fr;}}
+.contact-info-row{display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding:18px 0; font-size:13px;}
+.contact-info-row .k{letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,230,211,0.5);}
+.contact-info-row .v{color:var(--gold-2);}
+.social-row{display:flex; gap:26px; margin-top:30px;}
+.social-row a{font-size:12px; letter-spacing:0.15em; text-transform:uppercase; color:var(--beige); position:relative; padding-bottom:4px;}
+.social-row a::after{content:'';position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--gold); transition:width .3s;}
+.social-row a:hover::after{width:100%;}
+.field{position:relative; margin-bottom:34px;}
+.field input,.field textarea{width:100%; background:transparent; border:none; border-bottom:1px solid var(--line); padding:12px 0; color:var(--white); font-size:15px; font-family:'Jost',sans-serif; outline:none;}
+.field label{position:absolute; left:0; top:12px; font-size:14px; color:rgba(245,230,211,0.45); transition:all .3s; pointer-events:none; letter-spacing:0.04em;}
+.field input:focus + label, .field input:not(:placeholder-shown) + label, .field textarea:focus + label, .field textarea:not(:placeholder-shown) + label{top:-14px; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold);}
+.field .underline{position:absolute; left:0; bottom:0; height:1px; width:0; background:var(--gold-2); transition:width .4s;}
+.field input:focus ~ .underline, .field textarea:focus ~ .underline{width:100%;}
 
-/* ══════════ REVEAL ══════════ */
-.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.8s ease,transform 0.8s ease}
-.reveal.visible{opacity:1;transform:none}
-.reveal-left{opacity:0;transform:translateX(-32px);transition:opacity 0.8s ease,transform 0.8s ease}
-.reveal-left.visible{opacity:1;transform:none}
-.reveal-right{opacity:0;transform:translateX(32px);transition:opacity 0.8s ease,transform 0.8s ease}
-.reveal-right.visible{opacity:1;transform:none}
+/* ---------- footer ---------- */
+footer{padding:70px 6vw 40px; text-align:center; border-top:1px solid var(--line);}
+footer .fname{font-family:'Cormorant Garamond',serif; font-size:18px; letter-spacing:0.3em; color:var(--gold-2);}
+footer .ftag{font-size:11px; letter-spacing:0.15em; color:rgba(245,230,211,0.45); margin-top:10px; text-transform:uppercase;}
 
-/* ══════════ MOBILE NAV ══════════ */
-.mobile-nav{
-  position:fixed;inset:0;z-index:99;
-  background:rgba(11,11,11,0.97);
-  backdrop-filter:blur(20px);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2.5rem;list-style:none;
-  transform:translateX(100%);transition:transform 0.4s ease;
-}
-.mobile-nav.open{transform:translateX(0)}
-.mobile-nav a{
-  font-family:'Cormorant Garamond',serif;
-  font-size:2.5rem;font-style:italic;color:var(--white);text-decoration:none;
-  transition:color 0.3s;
-}
-.mobile-nav a:hover{color:var(--gold)}
-
-/* ══════════ RESPONSIVE ══════════ */
-@media(max-width:900px){
-  nav{padding:1rem 1.5rem}
-  .nav-links{display:none}
-  .nav-menu-btn{display:flex}
-  .about-grid,.contact-grid{grid-template-columns:1fr;gap:3rem}
-  .about-img-wrap{max-width:300px;margin:0 auto}
-  .section{padding:5rem 1.5rem}
-}
-@media(max-width:600px){
-  .hero h1{font-size:3rem}
-  .skills-grid,.achieve-grid{grid-template-columns:1fr 1fr}
-  .footer-inner{flex-direction:column;text-align:center}
-  .collection-tabs{gap:0.3rem}
-  .tab-btn{padding:0.5rem 0.8rem;font-size:0.55rem}
-}
-@media(prefers-reduced-motion:reduce){
-  *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
-  .reveal,.reveal-left,.reveal-right{opacity:1;transform:none}
-}
+.reveal{opacity:0; transform:translateY(40px);}
 </style>
 </head>
 <body>
 
-<!-- ══ LOADER ══ -->
-<div id="loader">
-  <div class="loader-gem">
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="50,4 92,32 92,68 50,96 8,68 8,32" fill="none" stroke="#D4AF37" stroke-width="1.5"/>
-      <polygon points="50,4 92,32 50,50 8,32" fill="rgba(212,175,55,0.15)" stroke="#F0D060" stroke-width="0.8"/>
-      <polygon points="50,50 92,32 92,68 50,96" fill="rgba(212,175,55,0.08)" stroke="#D4AF37" stroke-width="0.8"/>
-      <polygon points="50,50 8,32 8,68 50,96" fill="rgba(212,175,55,0.12)" stroke="#D4AF37" stroke-width="0.8"/>
-      <polygon points="50,96 8,68 92,68" fill="rgba(212,175,55,0.06)" stroke="#A08020" stroke-width="0.8"/>
-      <line x1="50" y1="4" x2="50" y2="96" stroke="#D4AF37" stroke-width="0.4" opacity="0.4"/>
-      <line x1="8" y1="32" x2="92" y2="32" stroke="#D4AF37" stroke-width="0.4" opacity="0.3"/>
-      <line x1="8" y1="68" x2="92" y2="68" stroke="#D4AF37" stroke-width="0.4" opacity="0.3"/>
-      <circle cx="50" cy="28" r="2" fill="#F0D060" opacity="0.8"/>
-      <circle cx="38" cy="45" r="1.2" fill="#D4AF37" opacity="0.5"/>
-      <circle cx="62" cy="45" r="1.2" fill="#D4AF37" opacity="0.5"/>
+<svg width="0" height="0"><defs><linearGradient id="shimmerGrad" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#D4AF37"/><stop offset="50%" stop-color="#F7E7A1"/><stop offset="100%" stop-color="#D4AF37"/>
+</linearGradient></defs></svg>
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="diamond-wrap">
+    <svg viewBox="0 0 100 100">
+      <polygon class="facet shimmer" points="50,8 70,38 50,92 30,38"/>
+      <polygon class="facet" points="20,38 80,38 50,8"/>
+      <line class="facet" x1="20" y1="38" x2="80" y2="38"/>
+      <line class="facet" x1="50" y1="8" x2="50" y2="92"/>
+      <line class="facet" x1="30" y1="38" x2="50" y2="92"/>
+      <line class="facet" x1="70" y1="38" x2="50" y2="92"/>
     </svg>
   </div>
-  <p class="loader-text">Crafting Elegance</p>
-  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="name">ANJALI GHOSH</div>
+  <div class="barwrap"><div class="bar" id="loadbar"></div></div>
 </div>
 
-<!-- ══ PARTICLES ══ -->
-<canvas id="particles-canvas"></canvas>
-
-<!-- ══ MOBILE NAV ══ -->
-<ul class="mobile-nav" id="mobileNav">
-  <li><a href="#about" onclick="closeMobileNav()">About</a></li>
-  <li><a href="#skills" onclick="closeMobileNav()">Skills</a></li>
-  <li><a href="#collections" onclick="closeMobileNav()">Collections</a></li>
-  <li><a href="#experience" onclick="closeMobileNav()">Experience</a></li>
-  <li><a href="#achievements" onclick="closeMobileNav()">Achievements</a></li>
-  <li><a href="#contact" onclick="closeMobileNav()">Contact</a></li>
-</ul>
-
-<!-- ══ NAV ══ -->
-<nav id="mainNav">
-  <div class="nav-logo">A<span>njali</span> Ghosh</div>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#skills">Skills</a></li>
-    <li><a href="#collections">Collections</a></li>
-    <li><a href="#experience">Experience</a></li>
-    <li><a href="#achievements">Achievements</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-  <button class="nav-menu-btn" onclick="toggleMobileNav()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
+<!-- NAV -->
+<nav>
+  <div class="brand">A·G</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#collections">Collections</a>
+    <a href="#case-studies">Work</a>
+    <a href="#experience">Experience</a>
+    <a href="#contact">Contact</a>
+  </div>
 </nav>
 
-<!-- ══ HERO ══ -->
-<section class="hero" id="home">
-  <div class="hero-bg"></div>
-
-  <!-- floating jewelry SVGs -->
-  <div class="jewelry-float" style="top:12%;left:6%">
-    <svg width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="28" fill="none" stroke="#D4AF37" stroke-width="1.2"/><circle cx="40" cy="40" r="18" fill="rgba(212,175,55,0.08)" stroke="#D4AF37" stroke-width="0.6"/><line x1="40" y1="12" x2="40" y2="68" stroke="#D4AF37" stroke-width="0.4" opacity="0.5"/><line x1="12" y1="40" x2="68" y2="40" stroke="#D4AF37" stroke-width="0.4" opacity="0.5"/></svg>
-  </div>
-  <div class="jewelry-float" style="top:20%;right:6%">
-    <svg width="70" height="90" viewBox="0 0 70 90"><polygon points="35,5 65,30 65,60 35,85 5,60 5,30" fill="none" stroke="#D4AF37" stroke-width="1.2"/><polygon points="35,5 65,30 35,47 5,30" fill="rgba(212,175,55,0.1)" stroke="#F0D060" stroke-width="0.5"/></svg>
-  </div>
-  <div class="jewelry-float" style="bottom:22%;left:10%">
-    <svg width="60" height="60" viewBox="0 0 60 60"><rect x="10" y="10" width="40" height="40" fill="none" stroke="#D4AF37" stroke-width="1" transform="rotate(45 30 30)"/><rect x="18" y="18" width="24" height="24" fill="rgba(212,175,55,0.07)" stroke="#D4AF37" stroke-width="0.5" transform="rotate(45 30 30)"/></svg>
-  </div>
-  <div class="jewelry-float" style="bottom:28%;right:8%">
-    <svg width="75" height="75" viewBox="0 0 75 75"><polygon points="37.5,5 70,37.5 37.5,70 5,37.5" fill="none" stroke="#D4AF37" stroke-width="1.2"/><polygon points="37.5,18 58,37.5 37.5,57 17,37.5" fill="rgba(212,175,55,0.08)" stroke="#F0D060" stroke-width="0.5"/><circle cx="37.5" cy="37.5" r="4" fill="rgba(212,175,55,0.3)"/></svg>
-  </div>
-
-  <div class="hero-content">
-    <p class="hero-eyebrow">Jewelry Designer · CAD Expert · Jaipur</p>
-    <h1>ANJALI<br/><span class="italic">Ghosh</span></h1>
-    <p class="hero-sub">Assistant Jewelry Designer &nbsp;|&nbsp; CAD Specialist</p>
-    <p class="hero-tagline">Transforming concepts into timeless jewelry through CAD precision, creativity, and craftsmanship.</p>
-    <div class="hero-divider"><span>◆</span></div>
-    <div class="hero-btns">
-      <a href="#collections" class="btn btn-gold">View Portfolio</a>
-      <a href="#contact" class="btn btn-outline-gold">Contact Me</a>
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <canvas class="gold-dust" id="dust-canvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-eyebrow reveal">Jewelry CAD Designer · Jaipur</div>
+    <h1 class="hero-title">
+      <div class="split-line"><span>ANJALI</span></div>
+      <div class="split-line"><span class="accent">Ghosh</span></div>
+    </h1>
+    <div class="hero-sub reveal">Assistant Jewelry Designer · CAD Specialist</div>
+    <p class="hero-tag reveal">Transforming concepts into timeless jewelry through CAD precision, creativity, and craftsmanship.</p>
+    <div class="hero-btns reveal">
+      <a href="#collections" class="btn-gold"><span>Explore Portfolio</span></a>
+      <a href="#contact" class="btn-ghost">Contact Me</a>
     </div>
   </div>
-  <div class="scroll-indicator">
-    <div class="scroll-line"></div>
-    <span>Scroll</span>
-  </div>
+  <div class="scroll-hint"><span>Scroll</span><span class="line"></span></div>
 </section>
 
-<!-- ══ ABOUT ══ -->
+<!-- ABOUT -->
 <section class="section" id="about">
-  <div class="container">
-    <div class="about-grid">
-      <div class="about-img-wrap reveal-left">
-        <div class="about-svg-frame">
-          <div class="about-monogram">AG</div>
-        </div>
-        <div class="about-badge">
-          <span class="about-badge-num">2+</span>
-          <span class="about-badge-txt">Years</span>
-        </div>
-      </div>
-      <div class="reveal-right">
-        <span class="section-badge">About Me</span>
-        <h2 class="section-title">The Art of<br/><em>Wearable Beauty</em></h2>
-        <div class="gold-rule"><span>◆</span></div>
-        <p>Jewelry designer with 2+ years of experience in CAD jewelry development, Rhino, Matrix, and creative product design. Based in Jaipur — the jewel capital of India — where craft tradition meets modern innovation.</p>
-        <p>Passionate about transforming ideas into elegant wearable art, balancing aesthetics, innovation, and craftsmanship in every piece I design.</p>
-        <div class="about-facts">
-          <div class="fact-item">
-            <span class="fact-num">10+</span>
-            <span class="fact-label">Pieces Monthly</span>
-          </div>
-          <div class="fact-item">
-            <span class="fact-num">85%</span>
-            <span class="fact-label">Approval Rate</span>
-          </div>
-          <div class="fact-item">
-            <span class="fact-num">30%</span>
-            <span class="fact-label">Sales Exceeded</span>
-          </div>
-          <div class="fact-item">
-            <span class="fact-num">40%</span>
-            <span class="fact-label">Eco Materials</span>
-          </div>
-        </div>
-      </div>
+  <div class="portrait-frame reveal">
+    <div class="portrait-inner">
+      <svg viewBox="0 0 100 100"><polygon points="50,10 85,40 50,90 15,40" fill="none" stroke="#D4AF37" stroke-width="0.6"/><polygon points="20,40 80,40 50,10" fill="none" stroke="#D4AF37" stroke-width="0.4" opacity="0.6"/><line x1="50" y1="10" x2="50" y2="90" stroke="#F7E7A1" stroke-width="0.3" opacity="0.5"/></svg>
+    </div>
+    <div class="portrait-caption">Jaipur, Rajasthan</div>
+  </div>
+  <div>
+    <div class="eyebrow reveal">About</div>
+    <h2 class="sec-title reveal">Crafting Timeless Elegance Through CAD Innovation</h2>
+    <p class="reveal" style="margin-top:26px; font-size:16px; line-height:1.95; color:rgba(245,230,211,0.78); max-width:540px;">
+      Jewelry designer with 2+ years of experience specializing in CAD jewelry development using Rhino and Matrix. Passionate about transforming concepts into elegant wearable art while balancing creativity, technical precision, and craftsmanship.
+    </p>
+    <div class="stat-grid reveal">
+      <div class="stat"><div class="num" data-count="2">0</div><div class="lbl">Years Experience</div></div>
+      <div class="stat"><div class="num" data-count="100">0</div><div class="lbl">CAD Concepts</div></div>
+      <div class="stat"><div class="num" data-count="50">0</div><div class="lbl">Rendered Designs</div></div>
+      <div class="stat"><div class="num" data-count="10">0</div><div class="lbl">Designs Monthly</div></div>
     </div>
   </div>
 </section>
 
-<!-- ══ SKILLS ══ -->
+<!-- SKILLS -->
 <section class="section" id="skills">
-  <div class="container">
-    <div class="reveal" style="text-align:center">
-      <span class="section-badge">Expertise</span>
-      <h2 class="section-title">Skills &amp; <em>Tools</em></h2>
-      <div class="gold-rule center-rule"><span>◆</span></div>
-    </div>
-    <div class="skills-grid">
-      <div class="skill-card reveal"><span class="skill-icon">✦</span><div class="skill-name">CAD Design</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="92"></div></div><span class="skill-pct">92%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">◈</span><div class="skill-name">Rhino 3D</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="88"></div></div><span class="skill-pct">88%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">⬡</span><div class="skill-name">Matrix</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="82"></div></div><span class="skill-pct">82%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">◉</span><div class="skill-name">Jewelry Rendering</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="85"></div></div><span class="skill-pct">85%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">◇</span><div class="skill-name">Product Development</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="80"></div></div><span class="skill-pct">80%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">✧</span><div class="skill-name">Concept Design</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="90"></div></div><span class="skill-pct">90%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">⬟</span><div class="skill-name">Prototyping</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="78"></div></div><span class="skill-pct">78%</span></div>
-      <div class="skill-card reveal"><span class="skill-icon">◎</span><div class="skill-name">Trend Research</div><div class="skill-bar-wrap"><div class="skill-bar-fill" data-pct="86"></div></div><span class="skill-pct">86%</span></div>
-    </div>
+  <div class="eyebrow reveal">Capabilities</div>
+  <h2 class="sec-title reveal">A Toolkit Built for Precision</h2>
+  <div class="skills-grid reveal">
+    <div class="skill-card"><div class="skill-name">Jewelry CAD Design</div><div class="skill-bar"><div class="skill-fill" data-pct="96"></div></div><div class="skill-pct">96%</div></div>
+    <div class="skill-card"><div class="skill-name">Rhino</div><div class="skill-bar"><div class="skill-fill" data-pct="92"></div></div><div class="skill-pct">92%</div></div>
+    <div class="skill-card"><div class="skill-name">Matrix</div><div class="skill-bar"><div class="skill-fill" data-pct="88"></div></div><div class="skill-pct">88%</div></div>
+    <div class="skill-card"><div class="skill-name">Jewelry Rendering</div><div class="skill-bar"><div class="skill-fill" data-pct="90"></div></div><div class="skill-pct">90%</div></div>
+    <div class="skill-card"><div class="skill-name">Product Development</div><div class="skill-bar"><div class="skill-fill" data-pct="85"></div></div><div class="skill-pct">85%</div></div>
+    <div class="skill-card"><div class="skill-name">Concept Design</div><div class="skill-bar"><div class="skill-fill" data-pct="93"></div></div><div class="skill-pct">93%</div></div>
+    <div class="skill-card"><div class="skill-name">Jewelry Prototyping</div><div class="skill-bar"><div class="skill-fill" data-pct="87"></div></div><div class="skill-pct">87%</div></div>
+    <div class="skill-card"><div class="skill-name">Trend Research</div><div class="skill-bar"><div class="skill-fill" data-pct="84"></div></div><div class="skill-pct">84%</div></div>
   </div>
 </section>
 
-<!-- ══ COLLECTIONS ══ -->
+<!-- COLLECTIONS -->
 <section class="section" id="collections">
-  <div class="container">
-    <div class="reveal" style="text-align:center;margin-bottom:2.5rem">
-      <span class="section-badge">Portfolio</span>
-      <h2 class="section-title">Jewelry <em>Collections</em></h2>
-      <div class="gold-rule center-rule"><span>◆</span></div>
-    </div>
-    <div class="collection-tabs reveal">
-      <button class="tab-btn active" onclick="showTab('rings',this)">Rings</button>
-      <button class="tab-btn" onclick="showTab('necklaces',this)">Necklaces</button>
-      <button class="tab-btn" onclick="showTab('jhumkas',this)">Jhumkas</button>
-      <button class="tab-btn" onclick="showTab('earrings',this)">Earrings</button>
-      <button class="tab-btn" onclick="showTab('brooches',this)">Brooches</button>
-    </div>
-
-    <!-- RINGS -->
-    <div class="collection-panel active" id="tab-rings">
-      <div class="jewelry-card" onclick="openLightbox('Diamond Solitaire Ring','Rings',0)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#181818,#1e1a0e)"><!-- SVG Ring 1 --><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="32" fill="none" stroke="#D4AF37" stroke-width="3"/><circle cx="60" cy="60" r="24" fill="rgba(212,175,55,0.08)" stroke="#D4AF37" stroke-width="1.5"/><polygon points="60,30 72,52 60,62 48,52" fill="rgba(212,175,55,0.25)" stroke="#F0D060" stroke-width="1"/><polygon points="60,62 72,52 80,60 60,78" fill="rgba(212,175,55,0.12)" stroke="#D4AF37" stroke-width="0.7"/><polygon points="60,62 48,52 40,60 60,78" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="0.7"/><circle cx="60" cy="40" r="3" fill="#F0D060"/><circle cx="60" cy="40" r="1.5" fill="white" opacity="0.8"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Diamond Solitaire Ring</div><div class="jewelry-card-cat">Rings Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Floral Ring','Rings',1)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#141018,#1a1018)"><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="28" fill="none" stroke="#D4AF37" stroke-width="2.5"/><g transform="translate(60,60)"><ellipse cx="0" cy="-14" rx="7" ry="11" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8"/><ellipse cx="0" cy="-14" rx="7" ry="11" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8" transform="rotate(60)"/><ellipse cx="0" cy="-14" rx="7" ry="11" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8" transform="rotate(120)"/><ellipse cx="0" cy="-14" rx="7" ry="11" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8" transform="rotate(180)"/><ellipse cx="0" cy="-14" rx="7" ry="11" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8" transform="rotate(240)"/><ellipse cx="0" cy="-14" rx="7" ry="11" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8" transform="rotate(300)"/><circle r="6" fill="rgba(212,175,55,0.4)" stroke="#F0D060" stroke-width="1"/></g></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Floral Ring</div><div class="jewelry-card-cat">Rings Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Modern Geometric Ring','Rings',2)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#0f1418,#141820)"><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="30" fill="none" stroke="#D4AF37" stroke-width="2"/><polygon points="60,36 76,54 76,70 60,80 44,70 44,54" fill="none" stroke="#F0D060" stroke-width="1.5"/><polygon points="60,42 70,56 70,66 60,72 50,66 50,56" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="0.8"/><line x1="60" y1="36" x2="60" y2="80" stroke="#D4AF37" stroke-width="0.5" opacity="0.4"/><line x1="44" y1="54" x2="76" y2="54" stroke="#D4AF37" stroke-width="0.5" opacity="0.4"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Modern Geometric Ring</div><div class="jewelry-card-cat">Rings Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Luxury Engagement Ring','Rings',3)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#1a1008,#1e1408)"><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="32" fill="none" stroke="#D4AF37" stroke-width="2.5"/><circle cx="60" cy="60" r="22" fill="none" stroke="rgba(212,175,55,0.4)" stroke-width="1"/><polygon points="60,32 68,48 60,55 52,48" fill="rgba(212,175,55,0.3)" stroke="#F0D060" stroke-width="1.2"/><polygon points="60,55 68,48 76,52 68,65 60,68" fill="rgba(212,175,55,0.12)" stroke="#D4AF37" stroke-width="0.7"/><polygon points="60,55 52,48 44,52 52,65 60,68" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="0.7"/><circle cx="60" cy="40" r="5" fill="rgba(212,175,55,0.5)" stroke="#F0D060" stroke-width="1"/><circle cx="60" cy="40" r="2.5" fill="white" opacity="0.7"/><circle cx="50" cy="46" r="2" fill="rgba(212,175,55,0.6)"/><circle cx="70" cy="46" r="2" fill="rgba(212,175,55,0.6)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Luxury Engagement Ring</div><div class="jewelry-card-cat">Rings Collection</div><div class="view-btn">View</div></div></div>
-    </div>
-
-    <!-- NECKLACES -->
-    <div class="collection-panel" id="tab-necklaces">
-      <div class="jewelry-card" onclick="openLightbox('Diamond Necklace','Necklaces',0)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#181818,#1e1a0e)"><svg width="130" height="130" viewBox="0 0 130 130"><path d="M25,40 Q65,20 105,40" fill="none" stroke="#D4AF37" stroke-width="2"/><path d="M25,40 Q45,100 65,110 Q85,100 105,40" fill="none" stroke="#D4AF37" stroke-width="2"/><circle cx="65" cy="110" r="8" fill="rgba(212,175,55,0.25)" stroke="#F0D060" stroke-width="1.5"/><polygon points="65,102 71,109 65,118 59,109" fill="rgba(212,175,55,0.4)" stroke="#F0D060" stroke-width="1"/><circle cx="40" cy="70" r="3.5" fill="rgba(212,175,55,0.4)" stroke="#D4AF37" stroke-width="0.8"/><circle cx="90" cy="70" r="3.5" fill="rgba(212,175,55,0.4)" stroke="#D4AF37" stroke-width="0.8"/><circle cx="53" cy="90" r="3" fill="rgba(212,175,55,0.3)"/><circle cx="77" cy="90" r="3" fill="rgba(212,175,55,0.3)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Diamond Necklace</div><div class="jewelry-card-cat">Necklace Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Emerald Statement Necklace','Necklaces',1)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#0a1408,#0e1a10)"><svg width="130" height="130" viewBox="0 0 130 130"><path d="M20,35 Q65,18 110,35" fill="none" stroke="#D4AF37" stroke-width="2"/><path d="M20,35 Q40,105 65,115 Q90,105 110,35" fill="none" stroke="#D4AF37" stroke-width="2"/><ellipse cx="65" cy="110" rx="12" ry="16" fill="rgba(16,120,60,0.3)" stroke="#D4AF37" stroke-width="1.5"/><ellipse cx="65" cy="110" rx="8" ry="11" fill="rgba(30,180,80,0.4)" stroke="#60D490" stroke-width="0.8"/><circle cx="36" cy="65" r="5" fill="rgba(16,120,60,0.4)" stroke="#D4AF37" stroke-width="1"/><circle cx="94" cy="65" r="5" fill="rgba(16,120,60,0.4)" stroke="#D4AF37" stroke-width="1"/><circle cx="50" cy="88" r="4" fill="rgba(16,120,60,0.35)"/><circle cx="80" cy="88" r="4" fill="rgba(16,120,60,0.35)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Emerald Statement Necklace</div><div class="jewelry-card-cat">Necklace Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Luxury Pendant','Necklaces',2)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#141018,#1a1018)"><svg width="130" height="130" viewBox="0 0 130 130"><path d="M30,30 Q65,22 100,30 Q65,45 30,30Z" fill="none" stroke="#D4AF37" stroke-width="1.5"/><line x1="65" y1="45" x2="65" y2="75" stroke="#D4AF37" stroke-width="1.5"/><polygon points="65,75 80,90 65,115 50,90" fill="none" stroke="#F0D060" stroke-width="1.5"/><polygon points="65,75 80,90 65,98 50,90" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="0.8"/><polygon points="65,98 80,90 65,115" fill="rgba(212,175,55,0.1)" stroke="#D4AF37" stroke-width="0.8"/><polygon points="65,98 50,90 65,115" fill="rgba(212,175,55,0.12)" stroke="#D4AF37" stroke-width="0.8"/><circle cx="65" cy="82" r="3" fill="rgba(212,175,55,0.5)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Luxury Pendant Design</div><div class="jewelry-card-cat">Necklace Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Bridal Necklace','Necklaces',3)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#1a1008,#1e1408)"><svg width="130" height="130" viewBox="0 0 130 130"><path d="M15,30 Q65,15 115,30" fill="none" stroke="#D4AF37" stroke-width="2"/><path d="M15,30 Q20,45 30,50 Q65,60 100,50 Q110,45 115,30" fill="none" stroke="#D4AF37" stroke-width="1.5"/><path d="M30,50 Q50,105 65,115 Q80,105 100,50" fill="none" stroke="#D4AF37" stroke-width="2"/><ellipse cx="65" cy="112" rx="10" ry="14" fill="rgba(212,175,55,0.25)" stroke="#F0D060" stroke-width="1.5"/><circle cx="40" cy="52" r="4" fill="rgba(212,175,55,0.4)" stroke="#D4AF37"/><circle cx="90" cy="52" r="4" fill="rgba(212,175,55,0.4)" stroke="#D4AF37"/><circle cx="52" cy="80" r="3.5" fill="rgba(212,175,55,0.35)"/><circle cx="78" cy="80" r="3.5" fill="rgba(212,175,55,0.35)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Bridal Necklace</div><div class="jewelry-card-cat">Necklace Collection</div><div class="view-btn">View</div></div></div>
-    </div>
-
-    <!-- JHUMKAS -->
-    <div class="collection-panel" id="tab-jhumkas">
-      <div class="jewelry-card" onclick="openLightbox('Traditional Gold Jhumka','Jhumkas',0)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#1a1008,#1e1408)"><svg width="100" height="130" viewBox="0 0 100 130"><ellipse cx="50" cy="20" rx="18" ry="10" fill="rgba(212,175,55,0.25)" stroke="#D4AF37" stroke-width="1.5"/><circle cx="50" cy="20" r="6" fill="rgba(212,175,55,0.5)" stroke="#F0D060" stroke-width="1"/><path d="M32,20 Q20,50 26,90 Q50,110 74,90 Q80,50 68,20" fill="rgba(212,175,55,0.1)" stroke="#D4AF37" stroke-width="1.5"/><ellipse cx="50" cy="90" rx="22" ry="14" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.2"/><line x1="35" y1="100" x2="35" y2="118" stroke="#D4AF37" stroke-width="1"/><line x1="50" y1="104" x2="50" y2="122" stroke="#D4AF37" stroke-width="1"/><line x1="65" y1="100" x2="65" y2="118" stroke="#D4AF37" stroke-width="1"/><circle cx="35" cy="120" r="2.5" fill="#D4AF37"/><circle cx="50" cy="124" r="2.5" fill="#D4AF37"/><circle cx="65" cy="120" r="2.5" fill="#D4AF37"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Traditional Gold Jhumka</div><div class="jewelry-card-cat">Jhumka Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Contemporary Jhumka','Jhumkas',1)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#0f1418,#141820)"><svg width="100" height="130" viewBox="0 0 100 130"><ellipse cx="50" cy="18" rx="16" ry="8" fill="none" stroke="#D4AF37" stroke-width="1.5"/><rect x="34" y="26" width="32" height="8" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1"/><path d="M34,34 Q30,60 34,90 Q50,108 66,90 Q70,60 66,34" fill="rgba(212,175,55,0.08)" stroke="#D4AF37" stroke-width="1.5"/><line x1="38" y1="108" x2="38" y2="124" stroke="#D4AF37" stroke-width="1"/><line x1="50" y1="110" x2="50" y2="126" stroke="#D4AF37" stroke-width="1"/><line x1="62" y1="108" x2="62" y2="124" stroke="#D4AF37" stroke-width="1"/><circle cx="38" cy="126" r="2" fill="#D4AF37"/><circle cx="50" cy="128" r="2" fill="#D4AF37"/><circle cx="62" cy="126" r="2" fill="#D4AF37"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Contemporary Jhumka</div><div class="jewelry-card-cat">Jhumka Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Pearl Jhumka','Jhumkas',2)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#181818,#1a1a22)"><svg width="100" height="130" viewBox="0 0 100 130"><ellipse cx="50" cy="16" rx="14" ry="8" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><path d="M36,22 Q28,55 32,90 Q50,112 68,90 Q72,55 64,22" fill="rgba(240,240,255,0.06)" stroke="#D4AF37" stroke-width="1.5"/><circle cx="40" cy="55" r="5" fill="rgba(240,240,255,0.5)" stroke="#D4AF37" stroke-width="0.7"/><circle cx="60" cy="55" r="5" fill="rgba(240,240,255,0.5)" stroke="#D4AF37" stroke-width="0.7"/><circle cx="50" cy="70" r="6" fill="rgba(240,240,255,0.5)" stroke="#D4AF37" stroke-width="0.8"/><circle cx="42" cy="85" r="4" fill="rgba(240,240,255,0.4)"/><circle cx="58" cy="85" r="4" fill="rgba(240,240,255,0.4)"/><line x1="42" y1="98" x2="42" y2="114" stroke="#D4AF37" stroke-width="0.8"/><line x1="50" y1="100" x2="50" y2="118" stroke="#D4AF37" stroke-width="0.8"/><line x1="58" y1="98" x2="58" y2="114" stroke="#D4AF37" stroke-width="0.8"/><circle cx="42" cy="116" r="3" fill="rgba(240,240,255,0.7)"/><circle cx="50" cy="120" r="3" fill="rgba(240,240,255,0.7)"/><circle cx="58" cy="116" r="3" fill="rgba(240,240,255,0.7)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Pearl Jhumka</div><div class="jewelry-card-cat">Jhumka Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Temple Inspired Jhumka','Jhumkas',3)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#1a1008,#201400)"><svg width="100" height="130" viewBox="0 0 100 130"><polygon points="50,5 65,18 65,28 50,28 35,28 35,18" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><rect x="36" y="28" width="28" height="10" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1"/><path d="M36,38 Q30,65 34,92 Q50,112 66,92 Q70,65 64,38" fill="rgba(212,175,55,0.08)" stroke="#D4AF37" stroke-width="1.5"/><line x1="40" y1="48" x2="40" y2="88" stroke="rgba(212,175,55,0.3)" stroke-width="0.5"/><line x1="50" y1="48" x2="50" y2="90" stroke="rgba(212,175,55,0.3)" stroke-width="0.5"/><line x1="60" y1="48" x2="60" y2="88" stroke="rgba(212,175,55,0.3)" stroke-width="0.5"/><line x1="36" y1="110" x2="36" y2="126" stroke="#D4AF37" stroke-width="1"/><line x1="50" y1="112" x2="50" y2="128" stroke="#D4AF37" stroke-width="1"/><line x1="64" y1="110" x2="64" y2="126" stroke="#D4AF37" stroke-width="1"/><circle cx="36" cy="128" r="2.5" fill="#D4AF37"/><circle cx="50" cy="130" r="2.5" fill="#D4AF37"/><circle cx="64" cy="128" r="2.5" fill="#D4AF37"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Temple Inspired Jhumka</div><div class="jewelry-card-cat">Jhumka Collection</div><div class="view-btn">View</div></div></div>
-    </div>
-
-    <!-- EARRINGS -->
-    <div class="collection-panel" id="tab-earrings">
-      <div class="jewelry-card" onclick="openLightbox('Diamond Studs','Earrings',0)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#181818,#1e1a0e)"><svg width="100" height="100" viewBox="0 0 100 100"><circle cx="35" cy="50" r="20" fill="rgba(212,175,55,0.1)" stroke="#D4AF37" stroke-width="2"/><polygon points="35,30 45,44 35,52 25,44" fill="rgba(212,175,55,0.4)" stroke="#F0D060" stroke-width="1.2"/><polygon points="35,52 45,44 52,50 40,62" fill="rgba(212,175,55,0.2)"/><polygon points="35,52 25,44 18,50 30,62" fill="rgba(212,175,55,0.25)"/><circle cx="65" cy="50" r="20" fill="rgba(212,175,55,0.1)" stroke="#D4AF37" stroke-width="2"/><polygon points="65,30 75,44 65,52 55,44" fill="rgba(212,175,55,0.4)" stroke="#F0D060" stroke-width="1.2"/><polygon points="65,52 75,44 82,50 70,62" fill="rgba(212,175,55,0.2)"/><polygon points="65,52 55,44 48,50 60,62" fill="rgba(212,175,55,0.25)"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Diamond Studs</div><div class="jewelry-card-cat">Earrings Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Drop Earrings','Earrings',1)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#141018,#1a1018)"><svg width="100" height="130" viewBox="0 0 100 130"><circle cx="35" cy="22" r="8" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><line x1="35" y1="30" x2="35" y2="50" stroke="#D4AF37" stroke-width="1.5"/><ellipse cx="35" cy="65" rx="10" ry="16" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.5"/><circle cx="65" cy="22" r="8" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><line x1="65" y1="30" x2="65" y2="50" stroke="#D4AF37" stroke-width="1.5"/><ellipse cx="65" cy="65" rx="10" ry="16" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.5"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Drop Earrings</div><div class="jewelry-card-cat">Earrings Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Luxury Hoops','Earrings',2)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#181818,#1a1a22)"><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="38" cy="60" r="22" fill="none" stroke="#D4AF37" stroke-width="4"/><circle cx="38" cy="60" r="18" fill="none" stroke="rgba(212,175,55,0.2)" stroke-width="1"/><circle cx="82" cy="60" r="22" fill="none" stroke="#D4AF37" stroke-width="4"/><circle cx="82" cy="60" r="18" fill="none" stroke="rgba(212,175,55,0.2)" stroke-width="1"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Luxury Hoops</div><div class="jewelry-card-cat">Earrings Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Bridal Earrings','Earrings',3)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#1a1008,#1e1408)"><svg width="100" height="140" viewBox="0 0 100 140"><circle cx="35" cy="18" r="10" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><line x1="35" y1="28" x2="35" y2="42" stroke="#D4AF37" stroke-width="1.2"/><ellipse cx="35" cy="55" rx="12" ry="8" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.2"/><line x1="35" y1="63" x2="35" y2="75" stroke="#D4AF37" stroke-width="1.2"/><polygon points="35,75 44,90 35,110 26,90" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.2"/><circle cx="65" cy="18" r="10" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><line x1="65" y1="28" x2="65" y2="42" stroke="#D4AF37" stroke-width="1.2"/><ellipse cx="65" cy="55" rx="12" ry="8" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.2"/><line x1="65" y1="63" x2="65" y2="75" stroke="#D4AF37" stroke-width="1.2"/><polygon points="65,75 74,90 65,110 56,90" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.2"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Bridal Earrings</div><div class="jewelry-card-cat">Earrings Collection</div><div class="view-btn">View</div></div></div>
-    </div>
-
-    <!-- BROOCHES -->
-    <div class="collection-panel" id="tab-brooches">
-      <div class="jewelry-card" onclick="openLightbox('Floral Brooch','Brooches',0)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#181818,#1e1a0e)"><svg width="120" height="120" viewBox="0 0 120 120"><g transform="translate(60,60)"><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(45)"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(90)"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(135)"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(180)"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(225)"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(270)"/><ellipse cx="0" cy="-20" rx="10" ry="16" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1" transform="rotate(315)"/><circle r="10" fill="rgba(212,175,55,0.5)" stroke="#F0D060" stroke-width="1.5"/><circle r="5" fill="#F0D060"/></g></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Floral Brooch</div><div class="jewelry-card-cat">Brooch Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Royal Brooch','Brooches',1)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#141018,#1a0e18)"><svg width="120" height="130" viewBox="0 0 120 130"><polygon points="60,10 70,35 95,35 75,52 82,77 60,62 38,77 45,52 25,35 50,35" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.5"/><polygon points="60,18 68,38 90,38 72,50 78,72 60,60 42,72 48,50 30,38 52,38" fill="none" stroke="rgba(212,175,55,0.3)" stroke-width="0.7"/><circle cx="60" cy="48" r="8" fill="rgba(212,175,55,0.4)" stroke="#F0D060" stroke-width="1.2"/><circle cx="60" cy="48" r="4" fill="#F0D060"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Royal Brooch</div><div class="jewelry-card-cat">Brooch Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Peacock Brooch','Brooches',2)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#081418,#0a1820)"><svg width="130" height="120" viewBox="0 0 130 120"><ellipse cx="50" cy="70" rx="8" ry="30" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1"/><ellipse cx="50" cy="70" rx="8" ry="30" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1" transform="rotate(-20 50 70)"/><ellipse cx="50" cy="70" rx="8" ry="30" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1" transform="rotate(20 50 70)"/><ellipse cx="50" cy="70" rx="8" ry="30" fill="rgba(30,100,140,0.2)" stroke="#4098C0" stroke-width="1" transform="rotate(-40 50 70)"/><ellipse cx="50" cy="70" rx="8" ry="30" fill="rgba(30,100,140,0.2)" stroke="#4098C0" stroke-width="1" transform="rotate(40 50 70)"/><circle cx="50" cy="80" r="14" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><circle cx="50" cy="80" r="8" fill="rgba(30,100,140,0.3)" stroke="#60B8E0" stroke-width="1"/><circle cx="50" cy="80" r="4" fill="rgba(212,175,55,0.6)"/><path d="M64,78 Q90,60 110,55" fill="none" stroke="#D4AF37" stroke-width="1.5"/><path d="M64,82 Q88,90 110,92" fill="none" stroke="#D4AF37" stroke-width="1.5"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Peacock Brooch</div><div class="jewelry-card-cat">Brooch Collection</div><div class="view-btn">View</div></div></div>
-      <div class="jewelry-card" onclick="openLightbox('Modern Luxury Brooch','Brooches',3)"><div class="jewelry-card-art" style="background:linear-gradient(135deg,#0f1418,#141820)"><svg width="120" height="120" viewBox="0 0 120 120"><rect x="25" y="25" width="70" height="70" fill="none" stroke="#D4AF37" stroke-width="1.5" transform="rotate(15 60 60)"/><rect x="35" y="35" width="50" height="50" fill="rgba(212,175,55,0.08)" stroke="rgba(212,175,55,0.3)" stroke-width="0.8" transform="rotate(15 60 60)"/><circle cx="60" cy="60" r="14" fill="rgba(212,175,55,0.2)" stroke="#D4AF37" stroke-width="1.5"/><circle cx="60" cy="60" r="8" fill="rgba(212,175,55,0.4)" stroke="#F0D060" stroke-width="1"/><circle cx="60" cy="60" r="4" fill="#F0D060"/></svg></div><div class="jewelry-card-overlay"><div class="jewelry-card-name">Modern Luxury Brooch</div><div class="jewelry-card-cat">Brooch Collection</div><div class="view-btn">View</div></div></div>
-    </div>
+  <div class="eyebrow reveal">Featured Collections</div>
+  <h2 class="sec-title reveal">Five Languages of Form</h2>
+  <div class="filter-row reveal" id="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="rings">Rings</button>
+    <button class="filter-btn" data-filter="necklaces">Necklaces</button>
+    <button class="filter-btn" data-filter="jhumkas">Jhumkas</button>
+    <button class="filter-btn" data-filter="earrings">Earrings</button>
+    <button class="filter-btn" data-filter="brooches">Brooches</button>
   </div>
+  <div class="gallery reveal" id="gallery"></div>
 </section>
 
-<!-- ══ EXPERIENCE ══ -->
+<!-- CASE STUDIES -->
+<section class="section" id="case-studies">
+  <div class="eyebrow reveal">Project Case Studies</div>
+  <h2 class="sec-title reveal">From Sketch to Sparkle</h2>
+  <div class="case-list reveal" id="case-list"></div>
+</section>
+
+<!-- EXPERIENCE -->
 <section class="section" id="experience">
-  <div class="container">
-    <div class="reveal" style="margin-bottom:3.5rem">
-      <span class="section-badge">Career</span>
-      <h2 class="section-title">My <em>Experience</em></h2>
-      <div class="gold-rule"><span>◆</span></div>
+  <div class="eyebrow reveal">Experience</div>
+  <h2 class="sec-title reveal">A Path Shaped by Detail</h2>
+  <div class="timeline reveal">
+    <div class="t-item">
+      <div class="t-dot"></div>
+      <div class="t-role">Jewelry Design Specialist</div>
+      <div class="t-co">Elegant Designs Inc.</div>
+      <div class="t-date">Oct 2023 — Present</div>
+      <ul class="t-list">
+        <li>Developed new jewelry collections from concept through prototype</li>
+        <li>Designed and prototyped 10+ jewelry pieces monthly</li>
+        <li>Conducted ongoing trend research to inform seasonal lines</li>
+        <li>Collaborated with suppliers to ensure timely, quality production</li>
+        <li>Achieved an 85% design approval rate in team reviews</li>
+      </ul>
     </div>
-    <div class="exp-wrap">
-      <div class="exp-line"></div>
-      <div class="exp-item reveal">
-        <div class="exp-dot"></div>
-        <p class="exp-period">October 2023 — Present</p>
-        <h3 class="exp-role">Jewelry Design Specialist</h3>
-        <p class="exp-co">Elegant Designs Inc. · Jaipur, Rajasthan</p>
-        <ul class="exp-list">
-          <li>Designed and launched a new jewelry line using CAD tools aligned with current market trends.</li>
-          <li>Prototyped 10+ jewelry pieces monthly, enhancing collection diversity and team output.</li>
-          <li>Conducted trend research contributing to seasonal collections resonating with target audience.</li>
-          <li>Collaborated with suppliers ensuring timely production without compromising craftsmanship.</li>
-          <li>Presented design concepts in reviews, securing approval for 85% of proposed ideas.</li>
-        </ul>
-      </div>
-      <div class="exp-item reveal">
-        <div class="exp-dot"></div>
-        <p class="exp-period">October 2020 — December 2022</p>
-        <h3 class="exp-role">Creative Designer</h3>
-        <p class="exp-co">Luxuriance Jewelers · Jaipur, Rajasthan</p>
-        <ul class="exp-list">
-          <li>Utilized Rhino and CAD to streamline design workflows, improving team productivity.</li>
-          <li>Contributed to the launch of a client customization service, enhancing customer satisfaction.</li>
-          <li>Mentored junior team members in CAD design techniques and creative approaches.</li>
-          <li>Created design reference documents maintaining consistency across all product lines.</li>
-        </ul>
-      </div>
+    <div class="t-item">
+      <div class="t-dot"></div>
+      <div class="t-role">Creative Designer</div>
+      <div class="t-co">Luxuriance Jewelers</div>
+      <div class="t-date">Earlier Role</div>
+      <ul class="t-list">
+        <li>Provided Rhino CAD workflow support across the design team</li>
+        <li>Led custom jewelry development for private clients</li>
+        <li>Maintained design documentation and brand consistency</li>
+        <li>Coordinated with production to streamline turnaround</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<!-- ══ ACHIEVEMENTS ══ -->
+<!-- ACHIEVEMENTS -->
 <section class="section" id="achievements">
-  <div class="container">
-    <div class="reveal" style="text-align:center;margin-bottom:3rem">
-      <span class="section-badge">Recognition</span>
-      <h2 class="section-title">Key <em>Achievements</em></h2>
-      <div class="gold-rule center-rule"><span>◆</span></div>
+  <div class="eyebrow reveal">Achievements</div>
+  <h2 class="sec-title reveal">Recognized in the Details</h2>
+  <div class="ach-grid reveal">
+    <div class="ach-card">
+      <svg class="ach-icon" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+      <div class="ach-title">Innovative Design<br>Contribution</div>
     </div>
-    <div class="achieve-grid">
-      <div class="achieve-card reveal">
-        <span class="achieve-num">01</span>
-        <span class="achieve-icon">⚡</span>
-        <h3 class="achieve-h">Innovative Design Contribution</h3>
-        <p class="achieve-p">Developed a unique jewelry collection that received outstanding client feedback and boosted local market sales.</p>
-      </div>
-      <div class="achieve-card reveal">
-        <span class="achieve-num">02</span>
-        <span class="achieve-icon">🏆</span>
-        <h3 class="achieve-h">Successful Product Showcase</h3>
-        <p class="achieve-p">Organized a product showcase exceeding initial sales expectations by 30% within the first month of launch.</p>
-      </div>
-      <div class="achieve-card reveal">
-        <span class="achieve-num">03</span>
-        <span class="achieve-icon">⚙️</span>
-        <h3 class="achieve-h">Workflow Efficiency Improvement</h3>
-        <p class="achieve-p">Streamlined CAD design workflows enabling timely monthly deliveries while maintaining premium quality standards.</p>
-      </div>
-      <div class="achieve-card reveal">
-        <span class="achieve-num">04</span>
-        <span class="achieve-icon">🌿</span>
-        <h3 class="achieve-h">Sustainable Material Research</h3>
-        <p class="achieve-p">Integrated eco-friendly materials into 40% of the product line, setting a new benchmark for sustainable luxury.</p>
-      </div>
+    <div class="ach-card">
+      <svg class="ach-icon" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+      <div class="ach-title">Product Showcase<br>Excellence</div>
+    </div>
+    <div class="ach-card">
+      <svg class="ach-icon" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="9"/></svg>
+      <div class="ach-title">Workflow<br>Optimization</div>
+    </div>
+    <div class="ach-card">
+      <svg class="ach-icon" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1"><path d="M12 2C8 6 5 9 5 13a7 7 0 0014 0c0-4-3-7-7-11z"/></svg>
+      <div class="ach-title">Sustainable Design<br>Research</div>
     </div>
   </div>
 </section>
 
-<!-- ══ PASSION ══ -->
-<section class="section" id="passion" style="position:relative;overflow:hidden">
-  <div class="passion-bg-text">Jewelry</div>
-  <div class="container passion-content">
-    <div class="reveal" style="text-align:center;margin-bottom:3.5rem">
-      <span class="section-badge">What Drives Me</span>
-      <h2 class="section-title">Jewelry Is More<br/>Than <em>Design</em></h2>
-      <div class="gold-rule center-rule"><span>◆</span></div>
-    </div>
-    <div class="passion-quote reveal">
-      Jewelry design is my creative language. Every piece is an opportunity to blend tradition, innovation, and emotion into a timeless form of wearable art — where each curve tells a story, and every gemstone holds a memory.
-    </div>
-    <p class="passion-sig reveal" style="text-align:center">Anjali Ghosh</p>
+<!-- PASSION -->
+<section id="passion">
+  <canvas id="passion-canvas"></canvas>
+  <div class="passion-inner">
+    <h2 class="passion-title reveal">Jewelry Is More<br>Than Design</h2>
+    <p class="passion-text reveal">Jewelry design is my creative language. Every piece is an opportunity to blend tradition, innovation, and emotion into a timeless form of wearable art.</p>
   </div>
 </section>
 
-<!-- ══ CONTACT ══ -->
+<!-- CONTACT -->
 <section class="section" id="contact">
-  <div class="container">
-    <div class="reveal" style="text-align:center;margin-bottom:4rem">
-      <span class="section-badge">Let's Connect</span>
-      <h2 class="section-title">Get In <em>Touch</em></h2>
-      <div class="gold-rule center-rule"><span>◆</span></div>
+  <div>
+    <div class="eyebrow reveal">Contact</div>
+    <h2 class="sec-title reveal" style="font-size:clamp(30px,4vw,48px);">Let's Design Something Timeless</h2>
+    <div style="margin-top:50px;" class="reveal">
+      <div class="contact-info-row"><span class="k">Name</span><span class="v">Anjali Ghosh</span></div>
+      <div class="contact-info-row"><span class="k">Location</span><span class="v">Jaipur, Rajasthan</span></div>
+      <div class="contact-info-row"><span class="k">Phone</span><span class="v">+91 63786 74057</span></div>
+      <div class="contact-info-row"><span class="k">Email</span><span class="v">kiyarpita@gmail.com</span></div>
     </div>
-    <div class="contact-grid">
-      <div class="reveal-left">
-        <h3>Anjali Ghosh</h3>
-        <p>Open to design opportunities, collaborations, and creative conversations.</p>
-        <div class="contact-items">
-          <a href="tel:+916378674057" class="contact-row">
-            <div class="contact-row-icon">📞</div>
-            +91 6378674057
-          </a>
-          <a href="mailto:kiyarpita@gmail.com" class="contact-row">
-            <div class="contact-row-icon">✉️</div>
-            kiyarpita@gmail.com
-          </a>
-          <span class="contact-row">
-            <div class="contact-row-icon">📍</div>
-            Jaipur, Rajasthan, India
-          </span>
-        </div>
-        <div class="social-links">
-          <a href="#" class="social-link" title="LinkedIn">in</a>
-          <a href="#" class="social-link" title="Behance">Be</a>
-          <a href="#" class="social-link" title="Instagram">ig</a>
-        </div>
-      </div>
-      <div class="reveal-right">
-        <div class="contact-form">
-          <div class="form-group">
-            <label>Your Name</label>
-            <input type="text" id="cf-name" placeholder="Full Name"/>
-          </div>
-          <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" id="cf-email" placeholder="your@email.com"/>
-          </div>
-          <div class="form-group">
-            <label>Message</label>
-            <textarea id="cf-msg" placeholder="Tell me about your project or opportunity…"></textarea>
-          </div>
-          <button class="btn btn-gold" onclick="submitForm()" style="width:100%;text-align:center">Send Message</button>
-          <p class="form-msg" id="form-success">✦ Thank you! Your message has been received.</p>
-        </div>
-      </div>
+    <div class="social-row reveal">
+      <a href="#">LinkedIn</a><a href="#">Behance</a><a href="#">Instagram</a>
     </div>
   </div>
+  <form class="reveal" onsubmit="event.preventDefault(); this.querySelector('.submit-label').textContent='Message Sent';">
+    <div class="field"><input type="text" placeholder=" " required><label>Your Name</label><div class="underline"></div></div>
+    <div class="field"><input type="email" placeholder=" " required><label>Your Email</label><div class="underline"></div></div>
+    <div class="field"><input type="text" placeholder=" "><label>Subject</label><div class="underline"></div></div>
+    <div class="field"><textarea rows="4" placeholder=" " required></textarea><label>Message</label><div class="underline"></div></div>
+    <button class="btn-gold" type="submit"><span class="submit-label">Send Message</span></button>
+  </form>
 </section>
 
-<!-- ══ FOOTER ══ -->
 <footer>
-  <div class="footer-inner">
-    <div>
-      <div class="footer-logo">Anjali Ghosh</div>
-      <div class="footer-tagline">Jewelry Designer · CAD Specialist · Jaipur</div>
-    </div>
-    <p class="footer-copy">© 2025 ANJALI GHOSH · ALL RIGHTS RESERVED</p>
-  </div>
+  <div class="fname">ANJALI GHOSH</div>
+  <div class="ftag">Designed with Precision &amp; Passion · © 2026</div>
 </footer>
 
-<!-- ══ LIGHTBOX ══ -->
-<div id="lightbox" role="dialog" aria-modal="true">
-  <div class="lightbox-inner">
-    <button id="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
-    <div id="lightbox-art"></div>
-    <h2 id="lightbox-title"></h2>
-    <p id="lightbox-cat"></p>
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <div class="lb-close" id="lb-close">Close ✕</div>
+  <div class="lb-inner">
+    <div id="lb-art" style="width:220px;height:220px;margin:0 auto 24px;"></div>
+    <div class="piece-cat" id="lb-cat"></div>
+    <div class="piece-name" style="font-size:30px;" id="lb-name"></div>
   </div>
+</div>
+
+<!-- CASE DETAIL -->
+<div id="case-detail">
+  <div class="cd-close" id="cd-close">Close ✕</div>
+  <div id="cd-content"></div>
 </div>
 
 <script>
-// ── LOADER ──────────────────────────────
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('hide');
-  }, 2800);
+/* =================== DATA =================== */
+const facetIcons = {
+  ring: `<svg viewBox="0 0 100 100"><circle cx="50" cy="62" r="26" fill="none" stroke="#D4AF37" stroke-width="2.4"/><polygon points="50,10 62,32 50,40 38,32" fill="none" stroke="#F7E7A1" stroke-width="2"/></svg>`,
+  necklace: `<svg viewBox="0 0 100 100"><path d="M20 20 Q50 70 80 20" fill="none" stroke="#D4AF37" stroke-width="2.2"/><polygon points="50,68 58,82 50,96 42,82" fill="none" stroke="#F7E7A1" stroke-width="2"/></svg>`,
+  jhumka: `<svg viewBox="0 0 100 100"><circle cx="50" cy="22" r="8" fill="none" stroke="#D4AF37" stroke-width="2"/><path d="M50 30 v14" stroke="#D4AF37" stroke-width="1.6"/><path d="M30 44 a20 20 0 0 0 40 0z" fill="none" stroke="#F7E7A1" stroke-width="2.2"/><path d="M30 64 v18 M40 64 v22 M50 64 v26 M60 64 v22 M70 64 v18" stroke="#D4AF37" stroke-width="1.4"/></svg>`,
+  earring: `<svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="7" fill="none" stroke="#D4AF37" stroke-width="2"/><line x1="50" y1="27" x2="50" y2="50" stroke="#D4AF37" stroke-width="1.6"/><polygon points="50,50 65,75 50,92 35,75" fill="none" stroke="#F7E7A1" stroke-width="2.2"/></svg>`,
+  brooch: `<svg viewBox="0 0 100 100"><path d="M50 14 L62 42 L92 46 L68 64 L76 92 L50 76 L24 92 L32 64 L8 46 L38 42 Z" fill="none" stroke="#D4AF37" stroke-width="2"/><circle cx="50" cy="50" r="7" fill="none" stroke="#F7E7A1" stroke-width="2"/></svg>`
+};
+const pieces = [
+  {cat:'rings',name:'Diamond Solitaire Ring',icon:facetIcons.ring},
+  {cat:'rings',name:'Floral Ring',icon:facetIcons.ring},
+  {cat:'rings',name:'Geometric Ring',icon:facetIcons.ring},
+  {cat:'rings',name:'Engagement Ring',icon:facetIcons.ring},
+  {cat:'necklaces',name:'Diamond Necklace',icon:facetIcons.necklace},
+  {cat:'necklaces',name:'Emerald Necklace',icon:facetIcons.necklace},
+  {cat:'necklaces',name:'Luxury Pendant',icon:facetIcons.necklace},
+  {cat:'necklaces',name:'Bridal Necklace',icon:facetIcons.necklace},
+  {cat:'jhumkas',name:'Traditional Gold Jhumka',icon:facetIcons.jhumka},
+  {cat:'jhumkas',name:'Pearl Jhumka',icon:facetIcons.jhumka},
+  {cat:'jhumkas',name:'Contemporary Jhumka',icon:facetIcons.jhumka},
+  {cat:'jhumkas',name:'Temple Inspired Jhumka',icon:facetIcons.jhumka},
+  {cat:'earrings',name:'Diamond Studs',icon:facetIcons.earring},
+  {cat:'earrings',name:'Luxury Hoops',icon:facetIcons.earring},
+  {cat:'earrings',name:'Drop Earrings',icon:facetIcons.earring},
+  {cat:'earrings',name:'Bridal Earrings',icon:facetIcons.earring},
+  {cat:'brooches',name:'Floral Brooch',icon:facetIcons.brooch},
+  {cat:'brooches',name:'Royal Brooch',icon:facetIcons.brooch},
+  {cat:'brooches',name:'Peacock Brooch',icon:facetIcons.brooch},
+  {cat:'brooches',name:'Modern Brooch',icon:facetIcons.brooch},
+];
+const cases = [
+  {title:'The Solitaire Reimagined', meta:'Rings · 4 weeks', challenge:'A client wanted a solitaire engagement ring that felt modern without losing the timelessness of a classic four-prong setting.', strategy:'Explored a tapered shank profile that draws the eye upward to the stone, paired with a hidden halo for added fire without bulk.', workflow:'Built the shank and prong geometry in Rhino, then refined surface continuity and stone seating tolerances in Matrix before render.', technical:'Stone seat engineered to 0.05mm tolerance for a 1.2ct round brilliant; 18k gold shank validated for casting shrinkage.', outcome:'Approved on first client review; moved to prototype within 5 days and became a repeat-order design.'},
+  {title:'Floral Motif Ring Series', meta:'Rings · 3 weeks', challenge:'Translate hand-sketched floral motifs into a wearable, structurally sound ring that wouldn\'t snag on fabric.', strategy:'Simplified petal silhouettes into smooth, continuous surfaces while preserving the organic asymmetry from the original sketch.', workflow:'Sketch digitized as a CAD reference plane, petals lofted in Rhino, then stress-checked at the thinnest junctions.', technical:'Minimum wall thickness held at 0.8mm across all petal joins to survive casting and daily wear.', outcome:'Delivered as a 4-piece capsule series; became the bestselling line in its launch month.'},
+  {title:'Bridal Necklace Commission', meta:'Necklaces · 6 weeks', challenge:'A bridal client requested a statement necklace that could transition from ceremony to reception without feeling heavy.', strategy:'Layered a structured collar with a detachable pendant drop, giving two looks in one piece.', workflow:'Modeled the collar curvature against a digital neckline reference, then engineered the detachable clasp mechanism in Matrix.', technical:'Clasp mechanism tested across 50+ open-close cycles in CAD simulation before prototyping.', outcome:'Final piece praised for comfort and versatility; referenced by the client\'s family for two follow-on commissions.'},
+  {title:'Temple-Inspired Jhumka', meta:'Jhumkas · 4 weeks', challenge:'Modernize a traditional temple jhumka silhouette for a younger, everyday-wear audience.', strategy:'Reduced ornamental density by 30% while keeping the dome and pearl-drop signature intact.', workflow:'Dome built as a parametric surface in Rhino for rapid iteration on curvature and bead spacing.', technical:'Bead drop spacing optimized to balance movement and tangle resistance during wear.', outcome:'Adopted as the studio\'s lightweight jhumka standard for the festive collection.'},
+  {title:'Contemporary Stud Capsule', meta:'Earrings · 2 weeks', challenge:'Create a stud earring line that reads minimal in catalogue photography but shows detail up close.', strategy:'Used micro-faceting on the gallery (the underside) so light catches at angles invisible from the front.', workflow:'Gallery faceting modeled and rendered at macro scale in Matrix to verify light behavior before sign-off.', technical:'Facet angles tuned across 6 iterations to maximize catch-light without adding visible bulk.', outcome:'Selected as the hero product for the brand\'s spring catalogue shoot.'},
+  {title:'Peacock Brooch Revival', meta:'Brooches · 5 weeks', challenge:'Reinterpret a vintage peacock brooch design for a client celebrating a family heirloom.', strategy:'Preserved the silhouette and proportions of the original sketch while updating the setting technique for durability.', workflow:'Feather detail hand-modeled in Rhino from archival photographs, then refined for manufacturability in Matrix.', technical:'Pin mechanism reinforced to support the brooch\'s wider-than-average stone spread.', outcome:'Delivered as a one-of-one heirloom piece; documented as a case study for the studio\'s archive series.'},
+];
+
+/* =================== BUILD GALLERY =================== */
+const galleryEl = document.getElementById('gallery');
+function renderGallery(filter){
+  galleryEl.innerHTML = pieces.filter(p=>filter==='all'||p.cat===filter).map(p=>`
+    <div class="piece" data-cat="${p.cat}" data-name="${p.name}">
+      <div class="piece-art">${p.icon}</div>
+      <div class="piece-overlay">
+        <div class="piece-cat">${p.cat}</div>
+        <div class="piece-name">${p.name}</div>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.piece').forEach(el=>{
+    el.addEventListener('click',()=>{
+      document.getElementById('lb-art').innerHTML = el.querySelector('.piece-art').innerHTML;
+      document.getElementById('lb-cat').textContent = el.dataset.cat;
+      document.getElementById('lb-name').textContent = el.dataset.name;
+      document.getElementById('lightbox').classList.add('open');
+    });
+  });
+}
+renderGallery('all');
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGallery(btn.dataset.filter);
+  });
+});
+document.getElementById('lb-close').addEventListener('click',()=>document.getElementById('lightbox').classList.remove('open'));
+document.getElementById('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') e.target.classList.remove('open'); });
+
+/* =================== BUILD CASE LIST =================== */
+const caseListEl = document.getElementById('case-list');
+const stages = ['Concept Sketch','CAD Modeling','Technical Development','3D Rendering','Final Presentation'];
+caseListEl.innerHTML = cases.map((c,i)=>`
+  <div class="case-row" data-idx="${i}">
+    <div class="case-left">
+      <div class="case-step">${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="case-title">${c.title}</div>
+        <div class="case-meta">${c.meta}</div>
+      </div>
+    </div>
+    <div class="case-arrow">→</div>
+  </div>`).join('');
+
+function openCase(i){
+  const c = cases[i];
+  document.getElementById('cd-content').innerHTML = `
+    <div class="cd-hero">
+      <div class="eyebrow">${c.meta}</div>
+      <h2 class="sec-title">${c.title}</h2>
+    </div>
+    <div class="cd-grid">
+      ${stages.map((s,idx)=>`<div class="cd-stage"><div class="n">${String(idx+1).padStart(2,'0')}</div><div class="t">${s}</div></div>`).join('')}
+    </div>
+    <div class="cd-body">
+      <h4>Challenge</h4><p>${c.challenge}</p>
+      <h4>Design Strategy</h4><p>${c.strategy}</p>
+      <h4>CAD Workflow</h4><p>${c.workflow}</p>
+      <h4>Technical Details</h4><p>${c.technical}</p>
+      <h4>Final Outcome</h4><p>${c.outcome}</p>
+    </div>`;
+  document.getElementById('case-detail').classList.add('open');
+  document.getElementById('case-detail').scrollTop = 0;
+}
+document.querySelectorAll('.case-row').forEach(row=>{
+  row.addEventListener('click',()=>openCase(+row.dataset.idx));
+});
+document.getElementById('cd-close').addEventListener('click',()=>document.getElementById('case-detail').classList.remove('open'));
+
+/* =================== PRELOADER =================== */
+window.addEventListener('load',()=>{
+  gsap.to('#loadbar',{width:'100%',duration:1.6,ease:'power2.inOut'});
+  gsap.to('#preloader .name',{opacity:1,duration:.8,delay:.3});
+  gsap.to('#preloader',{opacity:0,duration:.9,delay:2.0,onComplete:()=>{
+    document.getElementById('preloader').style.visibility='hidden';
+    runHeroIntro();
+  }});
 });
 
-// ── PARTICLES ───────────────────────────
+/* =================== CUSTOM CURSOR =================== */
+const dot = document.querySelector('.cursor-dot');
+const ring = document.querySelector('.cursor-ring');
+window.addEventListener('mousemove',e=>{
+  gsap.to(dot,{x:e.clientX,y:e.clientY,duration:.05});
+  gsap.to(ring,{x:e.clientX,y:e.clientY,duration:.35,ease:'power3.out'});
+});
+document.querySelectorAll('a,button,.piece,.case-row,input,textarea').forEach(el=>{
+  el.addEventListener('mouseenter',()=>ring.classList.add('big'));
+  el.addEventListener('mouseleave',()=>ring.classList.remove('big'));
+});
+
+/* =================== LENIS SMOOTH SCROLL =================== */
+const lenis = new Lenis({duration:1.1,smoothWheel:true});
+function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+lenis.on('scroll', ()=>ScrollTrigger.update());
+gsap.ticker.add((time)=>{ lenis.raf(time*1000); });
+gsap.ticker.lagSmoothing(0);
+
+/* =================== GSAP / SCROLLTRIGGER =================== */
+gsap.registerPlugin(ScrollTrigger);
+
+function runHeroIntro(){
+  const tl = gsap.timeline();
+  tl.to('.split-line span',{y:'0%',stagger:.12,duration:1.1,ease:'power4.out'})
+    .to('.hero-eyebrow',{opacity:1,y:0,duration:.8},'-=0.7')
+    .to('.hero-sub',{opacity:1,duration:.8},'-=0.6')
+    .to('.hero-tag',{opacity:1,duration:.8},'-=0.6')
+    .to('.hero-btns',{opacity:1,duration:.8},'-=0.6');
+}
+gsap.set('.hero-eyebrow,.hero-sub,.hero-tag,.hero-btns',{opacity:0,y:20});
+
+document.querySelectorAll('.section .reveal, #passion .reveal').forEach(el=>{
+  gsap.to(el,{
+    opacity:1, y:0, duration:1, ease:'power3.out',
+    scrollTrigger:{ trigger:el, start:'top 85%' }
+  });
+});
+
+/* stat counters */
+document.querySelectorAll('.stat .num').forEach(el=>{
+  const target = +el.dataset.count;
+  ScrollTrigger.create({
+    trigger: el, start:'top 90%', once:true,
+    onEnter:()=>{ gsap.to({val:0},{val:target,duration:1.6,ease:'power2.out',onUpdate:function(){ el.textContent = Math.floor(this.targets()[0].val)+'+'; }}); }
+  });
+});
+
+/* skill bars */
+document.querySelectorAll('.skill-fill').forEach(el=>{
+  ScrollTrigger.create({
+    trigger: el, start:'top 90%', once:true,
+    onEnter:()=>{ gsap.to(el,{width:el.dataset.pct+'%',duration:1.4,ease:'power3.out'}); }
+  });
+});
+
+/* =================== HERO THREE.JS DIAMOND =================== */
 (function(){
-  const canvas = document.getElementById('particles-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  const GOLD = [[212,175,55],[240,208,90],[160,128,32]];
-  function makeParticle(){
-    const c = GOLD[Math.floor(Math.random()*3)];
-    return {
-      x: Math.random()*W, y: Math.random()*H,
-      r: Math.random()*1.8+0.3,
-      dx: (Math.random()-0.5)*0.3,
-      dy: -Math.random()*0.4-0.1,
-      opacity: Math.random()*0.5+0.1,
-      color: c
-    };
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  function resize(){ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); }
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0,0,7);
+
+  const geo = new THREE.OctahedronGeometry(2.1, 0);
+  const mat = new THREE.MeshPhysicalMaterial({color:0xD4AF37, metalness:0.7, roughness:0.15, flatShading:true, transparent:true, opacity:0.55});
+  const diamond = new THREE.Mesh(geo, mat);
+  scene.add(diamond);
+
+  const wire = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({color:0xF7E7A1, transparent:true, opacity:0.6}));
+  diamond.add(wire);
+
+  const light1 = new THREE.PointLight(0xF7E7A1, 2.2, 50); light1.position.set(5,5,5); scene.add(light1);
+  const light2 = new THREE.PointLight(0xD4AF37, 1.4, 50); light2.position.set(-5,-3,4); scene.add(light2);
+  scene.add(new THREE.AmbientLight(0x222222));
+
+  let mouseX=0, mouseY=0;
+  window.addEventListener('mousemove', e=>{
+    mouseX = (e.clientX/window.innerWidth - 0.5);
+    mouseY = (e.clientY/window.innerHeight - 0.5);
+  });
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    diamond.rotation.y += 0.0035;
+    diamond.rotation.x += 0.0012;
+    camera.position.x += (mouseX*1.2 - camera.position.x)*0.03;
+    camera.position.y += (-mouseY*1.2 - camera.position.y)*0.03;
+    camera.lookAt(0,0,0);
+    renderer.render(scene, camera);
   }
-  for(let i=0;i<80;i++) particles.push(makeParticle());
-  function tick(){
-    ctx.clearRect(0,0,W,H);
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.opacity})`;
-      ctx.fill();
-      p.x += p.dx; p.y += p.dy;
-      if(p.y < -5 || p.x < -5 || p.x > W+5){
-        Object.assign(p, makeParticle(), {y: H+5, x: Math.random()*W});
-      }
-    });
-    requestAnimationFrame(tick);
-  }
-  tick();
+  animate();
 })();
 
-// ── NAV SCROLL ──────────────────────────
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('mainNav');
-  nav.classList.toggle('scrolled', window.scrollY > 60);
-});
+/* =================== GOLD DUST PARTICLES (hero) =================== */
+(function(){
+  const c = document.getElementById('dust-canvas');
+  const ctx = c.getContext('2d');
+  let w,h,particles=[];
+  function resize(){ w=c.width=window.innerWidth; h=c.height=window.innerHeight; }
+  resize(); window.addEventListener('resize',resize);
+  for(let i=0;i<70;i++){
+    particles.push({x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.6+0.3, s:Math.random()*0.4+0.1, o:Math.random()*0.5+0.2});
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+      p.y -= p.s;
+      if(p.y < -5){ p.y = h+5; p.x = Math.random()*w; }
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(247,231,161,${p.o})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 
-// ── MOBILE NAV ──────────────────────────
-function toggleMobileNav(){
-  document.getElementById('mobileNav').classList.toggle('open');
-}
-function closeMobileNav(){
-  document.getElementById('mobileNav').classList.remove('open');
-}
-
-// ── SCROLL REVEAL ───────────────────────
-const revEls = document.querySelectorAll('.reveal,.reveal-left,.reveal-right');
-const revObs = new IntersectionObserver((entries) => {
-  entries.forEach((e,i) => {
-    if(e.isIntersecting){
-      setTimeout(() => e.target.classList.add('visible'), i*70);
-      revObs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.1 });
-revEls.forEach(el => revObs.observe(el));
-
-// ── SKILL BARS ──────────────────────────
-const barObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if(e.isIntersecting){
-      e.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
-        bar.style.width = bar.dataset.pct + '%';
-      });
-      barObs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.3 });
-document.querySelectorAll('.skill-card').forEach(c => barObs.observe(c));
-
-// ── COLLECTION TABS ─────────────────────
-function showTab(id, btn){
-  document.querySelectorAll('.collection-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
-}
-
-// ── LIGHTBOX ────────────────────────────
-function openLightbox(name, cat, idx){
-  const lb = document.getElementById('lightbox');
-  const artEl = document.getElementById('lightbox-art');
-  // clone SVG from the card
-  const cards = document.querySelectorAll(`#tab-${cat.toLowerCase()} .jewelry-card-art`);
-  if(cards[idx]) artEl.innerHTML = cards[idx].innerHTML;
-  document.getElementById('lightbox-title').textContent = name;
-  document.getElementById('lightbox-cat').textContent = cat + ' Collection';
-  lb.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeLightbox(){
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.getElementById('lightbox').addEventListener('click', function(e){
-  if(e.target === this) closeLightbox();
-});
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
-
-// ── CONTACT FORM ────────────────────────
-function submitForm(){
-  const name = document.getElementById('cf-name').value.trim();
-  const email = document.getElementById('cf-email').value.trim();
-  const msg = document.getElementById('cf-msg').value.trim();
-  if(!name || !email || !msg){ alert('Please fill in all fields.'); return; }
-  const s = document.getElementById('form-success');
-  s.style.display = 'block';
-  document.getElementById('cf-name').value = '';
-  document.getElementById('cf-email').value = '';
-  document.getElementById('cf-msg').value = '';
-  setTimeout(() => s.style.display = 'none', 4000);
-}
-
-// ── MOUSE PARALLAX (hero floats) ────────
-document.addEventListener('mousemove', e => {
-  const floats = document.querySelectorAll('.jewelry-float');
-  const cx = window.innerWidth/2, cy = window.innerHeight/2;
-  const dx = (e.clientX - cx) / cx;
-  const dy = (e.clientY - cy) / cy;
-  floats.forEach((f,i) => {
-    const depth = (i%4+1)*4;
-    f.style.transform = `translate(${dx*depth}px, ${dy*depth}px)`;
-  });
-});
+/* =================== PASSION CANVAS PARTICLES =================== */
+(function(){
+  const c = document.getElementById('passion-canvas');
+  const ctx = c.getContext('2d');
+  let w,h,particles=[];
+  function resize(){ w=c.width=c.parentElement.offsetWidth; h=c.height=c.parentElement.offsetHeight; }
+  resize(); window.addEventListener('resize',resize);
+  for(let i=0;i<50;i++){
+    particles.push({x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.4+0.4, vx:(Math.random()-0.5)*0.15, vy:(Math.random()-0.5)*0.15, o:Math.random()*0.4+0.15});
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(212,175,55,${p.o})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 </script>
 </body>
 </html>
