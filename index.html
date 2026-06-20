@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anjali Ghosh — Jewelry Designer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy:      #0A0E1A;
+      --navy-mid:  #121828;
+      --gold:      #C9A84C;
+      --gold-lt:   #E2C97E;
+      --cream:     #F5EDD6;
+      --rose:      #D4A0A0;
+      --muted:     #8A8070;
+      --card-bg:   #141B2D;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 4rem;
+      background: rgba(10, 14, 26, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.3s, color 0.3s;
+    }
+    .nav-links a:hover { opacity: 1; color: var(--gold); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle radial glow behind gem */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── DIAMOND GEM (signature element) ── */
+    .gem-wrap {
+      margin-bottom: 3rem;
+      position: relative;
+    }
+    .gem {
+      width: 90px; height: 90px;
+      position: relative;
+      margin: 0 auto;
+      animation: gem-float 4s ease-in-out infinite;
+    }
+    .gem svg { width: 100%; height: 100%; filter: drop-shadow(0 0 18px rgba(201,168,76,0.55)); }
+    @keyframes gem-float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%       { transform: translateY(-8px) rotate(2deg); }
+    }
+    @keyframes gem-shimmer {
+      0%, 100% { filter: drop-shadow(0 0 14px rgba(201,168,76,0.45)); }
+      50%       { filter: drop-shadow(0 0 28px rgba(226,201,126,0.80)); }
+    }
+    .gem svg { animation: gem-shimmer 3s ease-in-out infinite; }
+
+    .hero-eyebrow {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin-bottom: 1.2rem;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold-lt);
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+      font-style: italic;
+      letter-spacing: 0.02em;
+    }
+    .hero-cta {
+      display: inline-flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center;
+    }
+    .btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 0.85rem 2.2rem;
+      text-decoration: none;
+      border-radius: 0;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+      border: 1px solid var(--gold);
+    }
+    .btn-primary:hover {
+      background: var(--gold-lt);
+      border-color: var(--gold-lt);
+      box-shadow: 0 0 20px rgba(201,168,76,0.35);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--cream);
+      border: 1px solid rgba(245,237,214,0.35);
+    }
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* ── GOLD DIVIDER ── */
+    .divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 0 auto 3.5rem;
+      max-width: 220px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+    .divider span {
+      font-size: 1rem;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 6rem 2rem;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+
+    .section-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .section-title em { font-style: italic; color: var(--gold-lt); }
+
+    /* ── ABOUT ── */
+    #about { background: var(--navy-mid); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .about-text p {
+      color: rgba(245,237,214,0.78);
+      margin-bottom: 1.2rem;
+      font-size: 1.05rem;
+      font-weight: 300;
+    }
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .stat-card {
+      background: var(--navy);
+      border: 1px solid rgba(201,168,76,0.18);
+      padding: 1.5rem 1.2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: block;
+    }
+    .stat-desc {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── EXPERIENCE ── */
+    #experience { background: var(--navy); }
+    .exp-timeline { position: relative; }
+    .exp-timeline::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--gold), rgba(201,168,76,0.1));
+    }
+    .exp-item {
+      padding-left: 2.5rem;
+      margin-bottom: 3.5rem;
+      position: relative;
+    }
+    .exp-item::before {
+      content: '◆';
+      position: absolute; left: -0.5rem;
+      color: var(--gold);
+      font-size: 0.8rem;
+      top: 0.15rem;
+    }
+    .exp-period {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.67rem;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .exp-role {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.15rem;
+    }
+    .exp-company {
+      font-style: italic;
+      color: var(--rose);
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .exp-list { list-style: none; }
+    .exp-list li {
+      color: rgba(245,237,214,0.72);
+      font-size: 0.97rem;
+      font-weight: 300;
+      padding: 0.35rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .exp-list li::before {
+      content: '—';
+      position: absolute; left: 0;
+      color: var(--gold);
+      opacity: 0.6;
+    }
+
+    /* ── ACHIEVEMENTS ── */
+    #achievements { background: var(--navy-mid); }
+    .achieve-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .achieve-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.15);
+      padding: 2rem 1.6rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .achieve-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201,168,76,0.45);
+    }
+    .achieve-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+    .achieve-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      margin-bottom: 0.6rem;
+      color: var(--gold-lt);
+    }
+    .achieve-card p {
+      font-size: 0.92rem;
+      font-weight: 300;
+      color: rgba(245,237,214,0.65);
+      line-height: 1.6;
+    }
+    .achieve-card::after {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgba(201,168,76,0.15), transparent);
+    }
+
+    /* ── SKILLS ── */
+    #skills { background: var(--navy); }
+    .skills-center { text-align: center; }
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+      margin-top: 2.5rem;
+    }
+    .skill-pill {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.8rem;
+      border: 1px solid rgba(201,168,76,0.35);
+      color: var(--gold-lt);
+      background: rgba(201,168,76,0.05);
+      transition: all 0.3s;
+      position: relative;
+    }
+    .skill-pill:hover {
+      background: rgba(201,168,76,0.12);
+      border-color: var(--gold);
+      box-shadow: 0 0 16px rgba(201,168,76,0.2);
+    }
+
+    /* ── COURSES ── */
+    #courses { background: var(--navy-mid); }
+    .course-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-left: 3px solid var(--gold);
+      padding: 2rem 2.2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      max-width: 680px;
+    }
+    .course-badge {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid rgba(201,168,76,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .course-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--gold-lt);
+      margin-bottom: 0.3rem;
+    }
+    .course-inst {
+      font-size: 0.9rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    /* ── PASSION ── */
+    #passion {
+      background: linear-gradient(135deg, var(--navy) 0%, #0D1226 50%, var(--navy) 100%);
+      text-align: center;
+    }
+    .passion-quote {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .passion-quote blockquote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.75;
+      color: rgba(245,237,214,0.85);
+      position: relative;
+      padding: 0 2rem;
+    }
+    .passion-quote blockquote::before,
+    .passion-quote blockquote::after {
+      content: '"';
+      font-size: 4rem;
+      color: rgba(201,168,76,0.3);
+      font-family: 'Playfair Display', serif;
+      position: absolute;
+      line-height: 1;
+    }
+    .passion-quote blockquote::before { top: -0.5rem; left: 0; }
+    .passion-quote blockquote::after  { bottom: -1.5rem; right: 0; }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--navy-mid); text-align: center; }
+    .contact-info {
+      display: flex;
+      gap: 2.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2rem 0 3rem;
+    }
+    .contact-item {
+      display: flex; align-items: center; gap: 0.7rem;
+      font-size: 1rem;
+      color: rgba(245,237,214,0.75);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .contact-item:hover { color: var(--gold); }
+    .contact-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      border-top: 1px solid rgba(201,168,76,0.15);
+      text-align: center;
+      padding: 1.8rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 760px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .contact-info { flex-direction: column; align-items: center; }
+      section { padding: 4rem 1.2rem; }
+    }
+    @media (max-width: 500px) {
+      .nav-links { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gem, .gem svg { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">AG</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#achievements">Achievements</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="gem-wrap">
+      <div class="gem">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Diamond shape -->
+          <polygon points="50,5 90,35 90,65 50,95 10,65 10,35" fill="none" stroke="#C9A84C" stroke-width="1.5"/>
+          <polygon points="50,5 90,35 50,50 10,35" fill="rgba(201,168,76,0.12)" stroke="#E2C97E" stroke-width="0.8"/>
+          <polygon points="50,50 90,35 90,65 50,95" fill="rgba(201,168,76,0.07)" stroke="#C9A84C" stroke-width="0.8"/>
+          <polygon points="50,50 10,35 10,65 50,95" fill="rgba(201,168,76,0.10)" stroke="#C9A84C" stroke-width="0.8"/>
+          <line x1="50" y1="5"  x2="50" y2="50" stroke="#E2C97E" stroke-width="0.6" opacity="0.6"/>
+          <line x1="10" y1="35" x2="90" y2="35" stroke="#E2C97E" stroke-width="0.6" opacity="0.4"/>
+          <!-- Inner sparkles -->
+          <circle cx="50" cy="30" r="1.5" fill="#E2C97E" opacity="0.7"/>
+          <circle cx="38" cy="42" r="1"   fill="#C9A84C" opacity="0.5"/>
+          <circle cx="62" cy="42" r="1"   fill="#C9A84C" opacity="0.5"/>
+        </svg>
+      </div>
+    </div>
+    <p class="hero-eyebrow">Portfolio — Jewelry Design & CAD</p>
+    <h1>Anjali <em>Ghosh</em></h1>
+    <p class="hero-sub">Crafting jewelry that speaks before words — where precision meets poetry.</p>
+    <div class="hero-cta">
+      <a href="#experience" class="btn btn-primary">View My Work</a>
+      <a href="#contact"    class="btn btn-outline">Get In Touch</a>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <span class="section-label">Who I Am</span>
+          <h2 class="section-title">Designing with <em>Purpose</em></h2>
+          <div class="divider" style="margin:1.5rem 0 1.5rem;max-width:120px;"><span>◆</span></div>
+          <p>With 2 years of experience in jewelry design, I bring a refined expertise in CAD and creative ideation to craft pieces that are both technically precise and deeply expressive.</p>
+          <p>Based in Jaipur — the Pink City and heart of India's jewelry tradition — I blend time-honored craftsmanship with modern design sensibilities, creating collections that resonate with today's discerning clientele.</p>
+          <p style="color:var(--muted); font-size:0.9rem;">📍 Jaipur, Rajasthan &nbsp;·&nbsp; ✉️ kiyarpita@gmail.com &nbsp;·&nbsp; 📞 +91 63786 74057</p>
+        </div>
+        <div class="about-stats reveal">
+          <div class="stat-card">
+            <span class="stat-num">2+</span>
+            <span class="stat-desc">Years Experience</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">10+</span>
+            <span class="stat-desc">Pieces Monthly</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">85%</span>
+            <span class="stat-desc">Design Approval Rate</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">40%</span>
+            <span class="stat-desc">Eco Materials Used</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Career Journey</span>
+        <h2 class="section-title">My <em>Experience</em></h2>
+        <div class="divider"><span>◆</span></div>
+      </div>
+      <div class="exp-timeline">
+        <div class="exp-item reveal">
+          <p class="exp-period">October 2023 — Present</p>
+          <h3 class="exp-role">Jewelry Design Specialist</h3>
+          <p class="exp-company">Elegant Designs Inc. · Jaipur, Rajasthan</p>
+          <ul class="exp-list">
+            <li>Designed and introduced a new jewelry line using foundational CAD skills aligned with current market trends.</li>
+            <li>Collaborated with team to prototype 10+ jewelry pieces monthly, enhancing collection diversity.</li>
+            <li>Conducted material research exploring cost-effective and sustainable production options.</li>
+            <li>Performed market analysis identifying trending designs for seasonal collections.</li>
+            <li>Presented design concepts in team reviews, securing approval for 85% of proposed ideas.</li>
+          </ul>
+        </div>
+        <div class="exp-item reveal">
+          <p class="exp-period">October 2020 — December 2022</p>
+          <h3 class="exp-role">Creative Designer</h3>
+          <p class="exp-company">Luxuriance Jewelers · Jaipur, Rajasthan</p>
+          <ul class="exp-list">
+            <li>Utilized Rhino and CAD to streamline design workflows, improving team efficiency.</li>
+            <li>Contributed to the launch of a client customization service that enhanced satisfaction.</li>
+            <li>Mentored junior team members in CAD design techniques and creative approaches.</li>
+            <li>Participated in cross-departmental meetings ensuring smooth design revision processes.</li>
+            <li>Created a design reference document to maintain consistency across product lines.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section id="achievements">
+    <div class="container">
+      <div class="reveal" style="text-align:center;">
+        <span class="section-label">Recognition</span>
+        <h2 class="section-title">Key <em>Achievements</em></h2>
+        <div class="divider"><span>◆</span></div>
+      </div>
+      <div class="achieve-grid">
+        <div class="achieve-card reveal">
+          <span class="achieve-icon">⚡</span>
+          <h3>Innovative Design Contribution</h3>
+          <p>Contributed to a unique jewelry collection that received positive client feedback and boosted sales within the local market.</p>
+        </div>
+        <div class="achieve-card reveal">
+          <span class="achieve-icon">🏆</span>
+          <h3>Successful Product Showcase</h3>
+          <p>Played a key role in organizing a product showcase that exceeded initial sales expectations by 30% in the first month.</p>
+        </div>
+        <div class="achieve-card reveal">
+          <span class="achieve-icon">⚙️</span>
+          <h3>Efficiency Improvement</h3>
+          <p>Streamlined the design workflow using CAD tools, improving productivity and enabling timely delivery of monthly collections.</p>
+        </div>
+        <div class="achieve-card reveal">
+          <span class="achieve-icon">🌿</span>
+          <h3>Sustainability Focus</h3>
+          <p>Supported integration of eco-friendly materials into 40% of the product line, aligning with modern market trends.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="container skills-center">
+      <div class="reveal">
+        <span class="section-label">Expertise</span>
+        <h2 class="section-title">Skills &amp; <em>Tools</em></h2>
+        <div class="divider"><span>◆</span></div>
+        <p style="color:var(--muted); font-size:0.97rem; font-style:italic; margin-bottom:0.5rem;">
+          Precision tools for precision artistry.
+        </p>
+      </div>
+      <div class="skills-grid reveal">
+        <div class="skill-pill">CAD Design</div>
+        <div class="skill-pill">Rhino 3D</div>
+        <div class="skill-pill">Matrix</div>
+        <div class="skill-pill">Jewelry Design</div>
+        <div class="skill-pill">Product Prototyping</div>
+        <div class="skill-pill">Material Research</div>
+        <div class="skill-pill">Market Analysis</div>
+        <div class="skill-pill">Eco-friendly Design</div>
+        <div class="skill-pill">Team Collaboration</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COURSES -->
+  <section id="courses">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Education</span>
+        <h2 class="section-title">Courses &amp; <em>Training</em></h2>
+        <div class="divider" style="margin-bottom:2.5rem;"><span>◆</span></div>
+      </div>
+      <div class="course-card reveal">
+        <div class="course-badge">💎</div>
+        <div>
+          <p class="course-name">Advanced Rhino for Jewelry Design</p>
+          <p class="course-inst">Rhino Training Center — Mastered precision Rhino tools for high-quality jewelry design workflows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASSION -->
+  <section id="passion">
+    <div class="container">
+      <div class="reveal" style="text-align:center; margin-bottom:3rem;">
+        <span class="section-label">What Drives Me</span>
+        <h2 class="section-title">My <em>Passion</em></h2>
+        <div class="divider"><span>◆</span></div>
+      </div>
+      <div class="passion-quote reveal">
+        <blockquote>
+          Jewelry design is more than a profession — it's a way to express creativity and bring unique ideas to life. Each piece I design is an opportunity to tell a story, blending tradition with modern trends to create something truly timeless.
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Let's Connect</span>
+        <h2 class="section-title">Get In <em>Touch</em></h2>
+        <div class="divider"><span>◆</span></div>
+        <p style="color:var(--muted); font-style:italic; margin-bottom:0.5rem;">
+          Open to collaborations, design roles, and creative conversations.
+        </p>
+      </div>
+      <div class="contact-info reveal">
+        <a href="mailto:kiyarpita@gmail.com" class="contact-item">
+          <span class="contact-icon">✉️</span>
+          kiyarpita@gmail.com
+        </a>
+        <a href="tel:+916378674057" class="contact-item">
+          <span class="contact-icon">📞</span>
+          +91 63786 74057
+        </a>
+        <span class="contact-item">
+          <span class="contact-icon">📍</span>
+          Jaipur, Rajasthan
+        </span>
+      </div>
+      <div class="reveal">
+        <a href="mailto:kiyarpita@gmail.com" class="btn btn-primary">Say Hello ◆</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 ANJALI GHOSH &nbsp;·&nbsp; JEWELRY DESIGNER &amp; CAD SPECIALIST &nbsp;·&nbsp; JAIPUR</p>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
